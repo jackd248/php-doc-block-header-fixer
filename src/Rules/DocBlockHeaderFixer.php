@@ -23,7 +23,7 @@ declare(strict_types=1);
 
 namespace KonradMichalik\PhpDocBlockHeaderFixer\Rules;
 
-use KonradMichalik\PhpDocBlockHeaderFixer\Model\Separate;
+use KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate;
 use PhpCsFixer\AbstractFixer;
 use PhpCsFixer\Fixer\ConfigurableFixerInterface;
 use PhpCsFixer\FixerConfiguration\FixerConfigurationResolver;
@@ -276,7 +276,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             }
         }
 
-        $docBlock .= " */\n";
+        $docBlock .= ' */';
 
         return $docBlock;
     }

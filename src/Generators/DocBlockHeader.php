@@ -24,7 +24,7 @@ declare(strict_types=1);
 namespace KonradMichalik\PhpDocBlockHeaderFixer\Generators;
 
 use InvalidArgumentException;
-use KonradMichalik\PhpDocBlockHeaderFixer\Model\Separate;
+use KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate;
 
 use function is_string;
 
