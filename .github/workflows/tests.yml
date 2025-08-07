@@ -3,25 +3,22 @@ on:
   push:
     branches:
       - '**'
-  pull_request:
-    branches:
-      - '**'
 
 jobs:
   tests:
-
-    name: Test ${{ matrix.name_suffix }}
+    name: Tests (PHP ${{ matrix.php-version }} & ${{ matrix.dependencies }} dependencies)
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        php-version: [ "8.1", "8.2", "8.3", "8.4" ]
-        dependencies: [ "locked", "highest", "lowest" ]
-
+        php-version: ["8.1", "8.2", "8.3", "8.4"]
+        dependencies: ["locked", "highest", "lowest"]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # Prepare environment
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -29,42 +26,52 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      # Install dependencies
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
         with:
           dependency-versions: ${{ matrix.dependencies }}
 
-      - name: Run PHPUnit tests
+      # Run tests
+      - name: Run tests
         run: composer test
 
   coverage:
+    name: Test coverage
     runs-on: ubuntu-latest
-    name: Code Coverage Report
-    needs: tests
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      # Prepare environment
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: libxml, simplexml, xdebug
-          tools: composer:'2.8'
+          php-version: 8.4
+          tools: composer:v2
+          coverage: pcov
 
+      # Install dependencies
       - name: Install Composer dependencies
         uses: ramsey/composer-install@v3
 
-      - name: Run PHPUnit tests with coverage
+      # Run tests
+      - name: Build coverage directory
+        run: mkdir -p .build/coverage
+      - name: Run tests with coverage
         run: composer test:coverage
 
-      - name: Upload coverage report
+      # Upload artifact
+      - name: Fix coverage path
+        working-directory: .build/coverage
+        run: sed -i 's#/home/runner/work/php-cs-fixer-config/php-cs-fixer-config#${{ github.workspace }}#g' clover.xml
+      - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
-          name: code-coverage-report
+          name: coverage
           path: .build/coverage/clover.xml
-          retention-days: 5
+          retention-days: 7
 
   coverage-report:
     name: Report test coverage
@@ -75,12 +82,24 @@ jobs:
         with:
           fetch-depth: 0
 
+      # Download artifact
       - name: Download coverage artifact
         id: download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
-          name: code-coverage-report
+          name: coverage
 
+      # CodeClimate
+      - name: CodeClimate report
+        uses: paambaati/codeclimate-action@v9.0.0
+        if: env.CC_TEST_REPORTER_ID
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageLocations: |
+            ${{ steps.download.outputs.download-path }}/clover.xml:clover
+
+      # Coveralls
       - name: Coveralls report
         uses: coverallsapp/github-action@v2
         with:
