@@ -32,7 +32,7 @@ use SplFileInfo;
 /**
  * @internal
  */
-#[\PHPUnit\Framework\Attributes\CoversClass(\KonradMichalik\PhpDocBlockHeaderFixer\Rules\DocBlockHeaderFixer::class)]
+#[\PHPUnit\Framework\Attributes\CoversClass(DocBlockHeaderFixer::class)]
 final class DocBlockHeaderFixerTest extends TestCase
 {
     private DocBlockHeaderFixer $fixer;
