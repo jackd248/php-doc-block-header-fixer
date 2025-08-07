@@ -81,6 +81,10 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 ->setAllowedValues(Separate::getList())
                 ->setDefault(Separate::Both->value)
                 ->getOption(),
+            (new FixerOptionBuilder('add_class_name', 'Add class name before annotations'))
+                ->setAllowedTypes(['bool'])
+                ->setDefault(false)
+                ->getOption(),
         ]);
     }
 
@@ -103,27 +107,50 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 continue;
             }
 
-            $this->processClassDocBlock($tokens, $index, $annotations);
+            $className = $this->getClassName($tokens, $index);
+            $this->processClassDocBlock($tokens, $index, $annotations, $className);
         }
     }
 
     /**
      * @param array<string, string|array<string>> $annotations
      */
-    private function processClassDocBlock(Tokens $tokens, int $classIndex, array $annotations): void
+    private function processClassDocBlock(Tokens $tokens, int $classIndex, array $annotations, string $className): void
     {
         $existingDocBlockIndex = $this->findExistingDocBlock($tokens, $classIndex);
         $preserveExisting = $this->resolvedConfiguration['preserve_existing'] ?? true;
 
         if (null !== $existingDocBlockIndex) {
             if ($preserveExisting) {
-                $this->mergeWithExistingDocBlock($tokens, $existingDocBlockIndex, $annotations);
+                $this->mergeWithExistingDocBlock($tokens, $existingDocBlockIndex, $annotations, $className);
             } else {
-                $this->replaceDocBlock($tokens, $existingDocBlockIndex, $annotations);
+                $this->replaceDocBlock($tokens, $existingDocBlockIndex, $annotations, $className);
             }
         } else {
-            $this->insertNewDocBlock($tokens, $classIndex, $annotations);
+            $this->insertNewDocBlock($tokens, $classIndex, $annotations, $className);
         }
+    }
+
+    private function getClassName(Tokens $tokens, int $classIndex): string
+    {
+        // Look for the class name token after the 'class' keyword
+        for ($i = $classIndex + 1, $limit = $tokens->count(); $i < $limit; ++$i) {
+            $token = $tokens[$i];
+
+            if ($token->isWhitespace()) {
+                continue;
+            }
+
+            // The first non-whitespace token after 'class' should be the class name
+            if ($token->isGivenKind(T_STRING)) {
+                return $token->getContent();
+            }
+
+            // If we hit anything else, stop looking
+            break;
+        }
+
+        return '';
     }
 
     private function findExistingDocBlock(Tokens $tokens, int $classIndex): ?int
@@ -151,29 +178,29 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     /**
      * @param array<string, string|array<string>> $annotations
      */
-    private function mergeWithExistingDocBlock(Tokens $tokens, int $docBlockIndex, array $annotations): void
+    private function mergeWithExistingDocBlock(Tokens $tokens, int $docBlockIndex, array $annotations, string $className): void
     {
         $existingContent = $tokens[$docBlockIndex]->getContent();
         $existingAnnotations = $this->parseExistingAnnotations($existingContent);
         $mergedAnnotations = $this->mergeAnnotations($existingAnnotations, $annotations);
 
-        $newDocBlock = $this->buildDocBlock($mergedAnnotations);
+        $newDocBlock = $this->buildDocBlock($mergedAnnotations, $className);
         $tokens[$docBlockIndex] = new Token([T_DOC_COMMENT, $newDocBlock]);
     }
 
     /**
      * @param array<string, string|array<string>> $annotations
      */
-    private function replaceDocBlock(Tokens $tokens, int $docBlockIndex, array $annotations): void
+    private function replaceDocBlock(Tokens $tokens, int $docBlockIndex, array $annotations, string $className): void
     {
-        $newDocBlock = $this->buildDocBlock($annotations);
+        $newDocBlock = $this->buildDocBlock($annotations, $className);
         $tokens[$docBlockIndex] = new Token([T_DOC_COMMENT, $newDocBlock]);
     }
 
     /**
      * @param array<string, string|array<string>> $annotations
      */
-    private function insertNewDocBlock(Tokens $tokens, int $classIndex, array $annotations): void
+    private function insertNewDocBlock(Tokens $tokens, int $classIndex, array $annotations, string $className): void
     {
         $separate = $this->resolvedConfiguration['separate'] ?? 'both';
         $insertIndex = $this->findInsertPosition($tokens, $classIndex);
@@ -186,7 +213,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         }
 
         // Add the DocBlock
-        $docBlock = $this->buildDocBlock($annotations);
+        $docBlock = $this->buildDocBlock($annotations, $className);
         $tokensToInsert[] = new Token([T_DOC_COMMENT, $docBlock]);
 
         // Add separation after comment if needed
@@ -255,13 +282,25 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     /**
      * @param array<string, string|array<string>> $annotations
      */
-    private function buildDocBlock(array $annotations): string
+    private function buildDocBlock(array $annotations, string $className): string
     {
-        if (empty($annotations)) {
+        $addClassName = $this->resolvedConfiguration['add_class_name'] ?? false;
+
+        if (empty($annotations) && !$addClassName) {
             return "/**\n */";
         }
 
         $docBlock = "/**\n";
+
+        // Add class name with dot if configured
+        if ($addClassName && !empty($className)) {
+            $docBlock .= " * {$className}.\n";
+
+            // Add empty line after class name if there are annotations
+            if (!empty($annotations)) {
+                $docBlock .= " *\n";
+            }
+        }
 
         foreach ($annotations as $tag => $value) {
             if (empty($value)) {

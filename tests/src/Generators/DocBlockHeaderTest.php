@@ -91,6 +91,7 @@ final class DocBlockHeaderTest extends TestCase
                 'annotations' => $annotations,
                 'preserve_existing' => false,
                 'separate' => 'top',
+                'add_class_name' => false,
             ],
         ];
 
@@ -109,6 +110,7 @@ final class DocBlockHeaderTest extends TestCase
                 'annotations' => $annotations,
                 'preserve_existing' => true,
                 'separate' => 'both',
+                'add_class_name' => false,
             ],
         ];
 
@@ -267,5 +269,45 @@ final class DocBlockHeaderTest extends TestCase
         $reflection = new ReflectionClass(DocBlockHeader::class);
 
         self::assertTrue($reflection->isFinal());
+    }
+
+    public function testCreateWithAddClassName(): void
+    {
+        $annotations = ['author' => 'John Doe'];
+        $docBlockHeader = DocBlockHeader::create(
+            $annotations,
+            true,
+            Separate::None,
+            true,
+        );
+
+        self::assertSame($annotations, $docBlockHeader->annotations);
+        self::assertTrue($docBlockHeader->preserveExisting);
+        self::assertSame(Separate::None, $docBlockHeader->separate);
+        self::assertTrue($docBlockHeader->addClassName);
+    }
+
+    public function testToArrayWithAddClassName(): void
+    {
+        $annotations = ['author' => 'John Doe'];
+        $docBlockHeader = DocBlockHeader::create(
+            $annotations,
+            false,
+            Separate::Top,
+            true,
+        );
+
+        $result = $docBlockHeader->__toArray();
+
+        $expected = [
+            'KonradMichalik/docblock_header_comment' => [
+                'annotations' => $annotations,
+                'preserve_existing' => false,
+                'separate' => 'top',
+                'add_class_name' => true,
+            ],
+        ];
+
+        self::assertSame($expected, $result);
     }
 }
