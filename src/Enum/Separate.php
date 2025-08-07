@@ -21,7 +21,7 @@ declare(strict_types=1);
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace KonradMichalik\PhpDocBlockHeaderFixer\Model;
+namespace KonradMichalik\PhpDocBlockHeaderFixer\Enum;
 
 enum Separate: string
 {
