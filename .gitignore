@@ -1,0 +1,10 @@
+/.idea
+/vendor
+/.php-cs-fixer.cache
+/.phpunit.result.cache
+/.build
+/php-cs-fixer.xml
+/phpstan.xml
+/site
+/tests/composer.lock
+/tests/vendor
