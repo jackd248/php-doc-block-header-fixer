@@ -85,7 +85,7 @@ final class DocBlockHeaderFixerTest extends TestCase
 
         $result = $method->invoke($this->fixer, ['author' => 'John Doe <john@example.com>']);
 
-        $expected = "/**\n * @author John Doe <john@example.com>\n */\n";
+        $expected = "/**\n * @author John Doe <john@example.com>\n */";
         self::assertSame($expected, $result);
     }
 
@@ -100,7 +100,7 @@ final class DocBlockHeaderFixerTest extends TestCase
             'package' => 'MyPackage',
         ]);
 
-        $expected = "/**\n * @author John Doe <john@example.com>\n * @license MIT\n * @package MyPackage\n */\n";
+        $expected = "/**\n * @author John Doe <john@example.com>\n * @license MIT\n * @package MyPackage\n */";
         self::assertSame($expected, $result);
     }
 
@@ -117,7 +117,52 @@ final class DocBlockHeaderFixerTest extends TestCase
             'license' => 'MIT',
         ]);
 
-        $expected = "/**\n * @author John Doe <john@example.com>\n * @author Jane Smith <jane@example.com>\n * @license MIT\n */\n";
+        $expected = "/**\n * @author John Doe <john@example.com>\n * @author Jane Smith <jane@example.com>\n * @license MIT\n */";
+        self::assertSame($expected, $result);
+    }
+
+    public function testBuildDocBlockWithEmptyValue(): void
+    {
+        $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, [
+            'deprecated' => '',
+            'author' => 'John Doe',
+        ]);
+
+        $expected = "/**\n * @deprecated\n * @author John Doe\n */";
+        self::assertSame($expected, $result);
+    }
+
+    public function testBuildDocBlockWithNullValue(): void
+    {
+        $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, [
+            'internal' => null,
+            'license' => 'MIT',
+        ]);
+
+        $expected = "/**\n * @internal\n * @license MIT\n */";
+        self::assertSame($expected, $result);
+    }
+
+    public function testBuildDocBlockWithMixedEmptyAndNonEmptyValues(): void
+    {
+        $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, [
+            'deprecated' => '',
+            'author' => 'John Doe',
+            'internal' => null,
+            'license' => 'MIT',
+            'api' => '',
+        ]);
+
+        $expected = "/**\n * @deprecated\n * @author John Doe\n * @internal\n * @license MIT\n * @api\n */";
         self::assertSame($expected, $result);
     }
 
@@ -174,5 +219,294 @@ final class DocBlockHeaderFixerTest extends TestCase
         ];
 
         self::assertSame($expected, $result);
+    }
+
+    public function testApplyFixWithEmptyAnnotations(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['annotations' => []]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        self::assertSame($code, $tokens->generateCode());
+    }
+
+    public function testApplyFixAddsDocBlockToClass(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+        $method->setAccessible(true);
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $expected = "<?php /**\n * @author John Doe\n */class Foo {}";
+        self::assertSame($expected, $tokens->generateCode());
+    }
+
+    public function testApplyFixHandlesMultipleClasses(): void
+    {
+        $code = '<?php class Foo {} class Bar {}';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+        $method->setAccessible(true);
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $expected = "<?php /**\n * @author John Doe\n */class Foo {} /**\n * @author John Doe\n */class Bar {}";
+        self::assertSame($expected, $tokens->generateCode());
+    }
+
+    public function testProcessClassDocBlockWithNewDocBlock(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'processClassDocBlock');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['separate' => 'none']);
+        $method->invoke($this->fixer, $tokens, 1, $annotations);
+
+        $expected = "<?php /**\n * @author John Doe\n */class Foo {}";
+        self::assertSame($expected, $tokens->generateCode());
+    }
+
+    public function testProcessClassDocBlockWithExistingDocBlockPreserve(): void
+    {
+        $code = "<?php /**\n * @license MIT\n */ class Foo {}";
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'processClassDocBlock');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['preserve_existing' => true]);
+        $method->invoke($this->fixer, $tokens, 2, $annotations);
+
+        self::assertStringContainsString('@license MIT', $tokens->generateCode());
+        self::assertStringContainsString('@author John Doe', $tokens->generateCode());
+    }
+
+    public function testProcessClassDocBlockWithExistingDocBlockReplace(): void
+    {
+        $code = "<?php /**\n * @license MIT\n */ class Foo {}";
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'processClassDocBlock');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['preserve_existing' => false]);
+        $method->invoke($this->fixer, $tokens, 2, $annotations);
+
+        self::assertStringNotContainsString('@license MIT', $tokens->generateCode());
+        self::assertStringContainsString('@author John Doe', $tokens->generateCode());
+    }
+
+    public function testFindExistingDocBlockFound(): void
+    {
+        $code = "<?php /**\n * @author John Doe\n */ class Foo {}";
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findExistingDocBlock');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, $tokens, 2);
+
+        self::assertSame(1, $result);
+    }
+
+    public function testFindExistingDocBlockNotFound(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findExistingDocBlock');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, $tokens, 1);
+
+        self::assertNull($result);
+    }
+
+    public function testFindExistingDocBlockWithModifiers(): void
+    {
+        $code = "<?php /**\n * @author John Doe\n */ final class Foo {}";
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findExistingDocBlock');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, $tokens, 3);
+
+        self::assertSame(1, $result);
+    }
+
+    public function testMergeWithExistingDocBlock(): void
+    {
+        $code = "<?php /**\n * @license MIT\n */ class Foo {}";
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'mergeWithExistingDocBlock');
+        $method->setAccessible(true);
+
+        $method->invoke($this->fixer, $tokens, 1, $annotations);
+
+        self::assertStringContainsString('@license MIT', $tokens->generateCode());
+        self::assertStringContainsString('@author John Doe', $tokens->generateCode());
+    }
+
+    public function testReplaceDocBlock(): void
+    {
+        $code = "<?php /**\n * @license MIT\n */ class Foo {}";
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'replaceDocBlock');
+        $method->setAccessible(true);
+
+        $method->invoke($this->fixer, $tokens, 1, $annotations);
+
+        self::assertStringNotContainsString('@license MIT', $tokens->generateCode());
+        self::assertStringContainsString('@author John Doe', $tokens->generateCode());
+    }
+
+    public function testInsertNewDocBlockWithSeparateNone(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['separate' => 'none']);
+        $method->invoke($this->fixer, $tokens, 1, $annotations);
+
+        $expected = "<?php /**\n * @author John Doe\n */class Foo {}";
+        self::assertSame($expected, $tokens->generateCode());
+    }
+
+    public function testInsertNewDocBlockWithSeparateTop(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['separate' => 'top']);
+        $method->invoke($this->fixer, $tokens, 1, $annotations);
+
+        $result = $tokens->generateCode();
+        self::assertStringContainsString('@author John Doe', $result);
+        self::assertGreaterThanOrEqual(3, substr_count($result, "\n"));
+    }
+
+    public function testInsertNewDocBlockWithSeparateBottom(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['separate' => 'bottom']);
+        $method->invoke($this->fixer, $tokens, 1, $annotations);
+
+        $result = $tokens->generateCode();
+        self::assertStringContainsString('@author John Doe', $result);
+        self::assertGreaterThanOrEqual(3, substr_count($result, "\n"));
+    }
+
+    public function testInsertNewDocBlockWithSeparateBoth(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
+        $method->setAccessible(true);
+
+        $this->fixer->configure(['separate' => 'both']);
+        $method->invoke($this->fixer, $tokens, 1, $annotations);
+
+        $result = $tokens->generateCode();
+        self::assertStringContainsString('@author John Doe', $result);
+        self::assertGreaterThanOrEqual(4, substr_count($result, "\n"));
+    }
+
+    public function testFindInsertPositionSimpleClass(): void
+    {
+        $code = '<?php class Foo {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, $tokens, 1);
+
+        self::assertSame(1, $result);
+    }
+
+    public function testFindInsertPositionWithFinalModifier(): void
+    {
+        $code = '<?php final class Foo {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, $tokens, 2);
+
+        self::assertSame(1, $result);
+    }
+
+    public function testFindInsertPositionWithAbstractModifier(): void
+    {
+        $code = '<?php abstract class Foo {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, $tokens, 2);
+
+        self::assertSame(1, $result);
+    }
+
+    public function testFindInsertPositionWithAttribute(): void
+    {
+        $code = '<?php #[SomeAttribute] class Foo {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+        $method->setAccessible(true);
+
+        $result = $method->invoke($this->fixer, $tokens, 2);
+
+        self::assertSame(1, $result);
     }
 }
