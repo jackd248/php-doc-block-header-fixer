@@ -2,10 +2,10 @@
 
 # Php DocBlock Header Fixer
 
-[![Coverage](https://img.shields.io/coverallsCoverage/github/jackd248/php-docblock-header-fixer?logo=coveralls)](https://coveralls.io/github/jackd248/php-docblock-header-fixer)
-[![CGL](https://img.shields.io/github/actions/workflow/status/jackd248/php-docblock-header-fixer/cgl.yml?label=cgl&logo=github)](https://github.com/jackd248/php-docblock-header-fixer/actions/workflows/cgl.yml)
-[![Tests](https://img.shields.io/github/actions/workflow/status/jackd248/php-docblock-header-fixer/tests.yml?label=tests&logo=github)](https://github.com/jackd248/php-docblock-header-fixer/actions/workflows/tests.yml)
-[![Supported PHP Versions](https://img.shields.io/packagist/dependency-v/konradmichalik/php-docblock-header-fixer/php?logo=php)](https://packagist.org/packages/konradmichalik/php-docblock-header-fixer)
+[![Coverage](https://img.shields.io/coverallsCoverage/github/jackd248/php-doc-block-header-fixer?logo=coveralls)](https://coveralls.io/github/jackd248/php-doc-block-header-fixer)
+[![CGL](https://img.shields.io/github/actions/workflow/status/jackd248/php-doc-block-header-fixer/cgl.yml?label=cgl&logo=github)](https://github.com/jackd248/php-doc-block-header-fixer/actions/workflows/cgl.yml)
+[![Tests](https://img.shields.io/github/actions/workflow/status/jackd248/php-doc-block-header-fixer/tests.yml?label=tests&logo=github)](https://github.com/jackd248/php-doc-block-header-fixer/actions/workflows/tests.yml)
+[![Supported PHP Versions](https://img.shields.io/packagist/dependency-v/konradmichalik/php-doc-block-header-fixer/php?logo=php)](https://packagist.org/packages/konradmichalik/php-doc-block-header-fixer)
 
 </div>
 
@@ -46,12 +46,12 @@ class MyClass
 
 ## 🔥 Installation
 
-[![Packagist](https://img.shields.io/packagist/v/konradmichalik/php-docblock-header-fixer?label=version&logo=packagist)](https://packagist.org/packages/konradmichalik/php-docblock-header-fixer)
-[![Packagist Downloads](https://img.shields.io/packagist/dt/konradmichalik/php-docblock-header-fixer?color=brightgreen)](https://packagist.org/packages/konradmichalik/php-docblock-header-fixer)
+[![Packagist](https://img.shields.io/packagist/v/konradmichalik/php-doc-block-header-fixer?label=version&logo=packagist)](https://packagist.org/packages/konradmichalik/php-doc-block-header-fixer)
+[![Packagist Downloads](https://img.shields.io/packagist/dt/konradmichalik/php-doc-block-header-fixer?color=brightgreen)](https://packagist.org/packages/konradmichalik/php-doc-block-header-fixer)
 
 
 ```bash
-composer require --dev konradmichalik/php-docblock-header-fixer
+composer require --dev konradmichalik/php-doc-block-header-fixer
 ```
 
 ## ⚡ Usage
