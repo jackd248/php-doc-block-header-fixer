@@ -45,7 +45,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     /**
      * @var array<string, mixed>|null
      */
-    private ?array $configuration = null;
+    protected ?array $configuration = null;
 
     public function getDefinition(): FixerDefinitionInterface
     {
