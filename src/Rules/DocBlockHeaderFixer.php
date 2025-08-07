@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace KonradMichalik\PhpDocBlockHeaderFixer\Rules;
 
+use KonradMichalik\PhpDocBlockHeaderFixer\Model\Separate;
 use PhpCsFixer\AbstractFixer;
 use PhpCsFixer\Fixer\ConfigurableFixerInterface;
 use PhpCsFixer\FixerConfiguration\FixerConfigurationResolver;
@@ -43,9 +44,9 @@ use SplFileInfo;
 final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFixerInterface
 {
     /**
-     * @var array<string, mixed>|null
+     * @var array<string, mixed>
      */
-    protected ?array $configuration = null;
+    private array $resolvedConfiguration = [];
 
     public function getDefinition(): FixerDefinitionInterface
     {
@@ -77,20 +78,20 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 ->setDefault(true)
                 ->getOption(),
             (new FixerOptionBuilder('separate', 'Separate the comment'))
-                ->setAllowedValues(['top', 'bottom', 'both', 'none'])
-                ->setDefault('both')
+                ->setAllowedValues(Separate::getList())
+                ->setDefault(Separate::Both->value)
                 ->getOption(),
         ]);
     }
 
     public function configure(?array $configuration = null): void
     {
-        $this->configuration = $this->getConfigurationDefinition()->resolve($configuration ?? []);
+        $this->resolvedConfiguration = $this->getConfigurationDefinition()->resolve($configuration ?? []);
     }
 
     protected function applyFix(SplFileInfo $file, Tokens $tokens): void
     {
-        $annotations = $this->configuration['annotations'] ?? [];
+        $annotations = $this->resolvedConfiguration['annotations'] ?? [];
         if (empty($annotations)) {
             return;
         }
@@ -112,7 +113,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     private function processClassDocBlock(Tokens $tokens, int $classIndex, array $annotations): void
     {
         $existingDocBlockIndex = $this->findExistingDocBlock($tokens, $classIndex);
-        $preserveExisting = $this->configuration['preserve_existing'] ?? true;
+        $preserveExisting = $this->resolvedConfiguration['preserve_existing'] ?? true;
 
         if (null !== $existingDocBlockIndex) {
             if ($preserveExisting) {
@@ -174,7 +175,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
      */
     private function insertNewDocBlock(Tokens $tokens, int $classIndex, array $annotations): void
     {
-        $separate = $this->configuration['separate'] ?? 'both';
+        $separate = $this->resolvedConfiguration['separate'] ?? 'both';
         $insertIndex = $this->findInsertPosition($tokens, $classIndex);
 
         $tokensToInsert = [];
