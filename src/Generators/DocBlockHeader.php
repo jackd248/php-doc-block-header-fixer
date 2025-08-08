@@ -35,6 +35,7 @@ final class DocBlockHeader implements Generator
         public readonly array $annotations,
         public readonly bool $preserveExisting,
         public readonly Separate $separate,
+        public readonly bool $addClassName,
     ) {}
 
     /**
@@ -44,10 +45,11 @@ final class DocBlockHeader implements Generator
         array $annotations,
         bool $preserveExisting = true,
         Separate $separate = Separate::Both,
+        bool $addClassName = false,
     ): self {
         self::validateAnnotations($annotations);
 
-        return new self($annotations, $preserveExisting, $separate);
+        return new self($annotations, $preserveExisting, $separate, $addClassName);
     }
 
     /**
@@ -60,6 +62,7 @@ final class DocBlockHeader implements Generator
                 'annotations' => $this->annotations,
                 'preserve_existing' => $this->preserveExisting,
                 'separate' => $this->separate->value,
+                'add_class_name' => $this->addClassName,
             ],
         ];
     }

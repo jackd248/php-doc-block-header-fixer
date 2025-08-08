@@ -75,6 +75,7 @@ return (new PhpCsFixer\Config())
             ],
             'preserve_existing' => true,
             'separate' => 'none',
+            'add_class_name' => true,
         ],
     ])
 ;
@@ -98,7 +99,8 @@ return (new PhpCsFixer\Config())
                 'package' => 'PhpDocBlockHeaderFixer',
             ],
             preserveExisting: true,
-            separate: \KonradMichalik\PhpDocBlockHeaderFixer\Model\Separate::None
+            separate: \KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate::None,
+            addClassName: true
         )->__toArray()
     ])
 ;
