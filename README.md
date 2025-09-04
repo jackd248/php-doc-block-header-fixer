@@ -9,7 +9,7 @@
 
 </div>
 
-This packages contains a [PHP-CS-Fixer](https://github.com/PHP-CS-Fixer/PHP-CS-Fixer) rule to automatically fix the class header regarding PHP DocBlocks.
+This packages contains a [PHP-CS-Fixer](https://github.com/PHP-CS-Fixer/PHP-CS-Fixer) rule to automatically fix the header regarding PHP DocBlocks for classes, interfaces, traits and enums.
 
 > [!warning]
 > This package is in early development stage and may change significantly in the future. Use it at your own risk.
@@ -26,6 +26,10 @@ class MyClass
         // ...
     }
 }
+
+interface MyInterface {}
+trait MyTrait {}
+enum MyEnum {}
 ```
 
 **After:**
@@ -76,7 +80,7 @@ return (new PhpCsFixer\Config())
             ],
             'preserve_existing' => true,
             'separate' => 'none',
-            'add_class_name' => true,
+            'add_structure_name' => true,
         ],
     ])
 ;
@@ -100,7 +104,7 @@ return (new PhpCsFixer\Config())
             ],
             preserveExisting: true,
             separate: \KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate::None,
-            addClassName: true
+            addStructureName: true
         )->__toArray()
     ])
 ;
