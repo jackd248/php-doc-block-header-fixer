@@ -36,7 +36,6 @@ class MyClass
  * MyClass.
  *
  * @author Your Name <your@email.org>
- * @package MyPackage
  */
 class MyClass
 {
@@ -58,6 +57,9 @@ composer require --dev konradmichalik/php-doc-block-header-fixer
 
 Add the PHP-CS-Fixer rule in your `.php-cs-fixer.php` file:
 
+> [!NOTE]
+> This fixer is compatible with standard PHP-CS-Fixer rules. It avoids adding annotations that conflict with rules like `phpdoc_no_package` and follows spacing conventions compatible with `phpdoc_separation`.
+
 ```php
 <?php
 // ...
@@ -71,7 +73,6 @@ return (new PhpCsFixer\Config())
             'annotations' => [
                 'author' => 'Konrad Michalik <hej@konradmichalik.dev>',
                 'license' => 'GPL-3.0-or-later',
-                'package' => 'PhpDocBlockHeaderFixer',
             ],
             'preserve_existing' => true,
             'separate' => 'none',
@@ -96,7 +97,6 @@ return (new PhpCsFixer\Config())
             [
                 'author' => 'Konrad Michalik <hej@konradmichalik.dev>',
                 'license' => 'GPL-3.0-or-later',
-                'package' => 'PhpDocBlockHeaderFixer',
             ],
             preserveExisting: true,
             separate: \KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate::None,
