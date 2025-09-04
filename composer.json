@@ -1,6 +1,6 @@
 {
 	"name": "konradmichalik/php-doc-block-header-fixer",
-	"description": "This packages contains a PHP-CS-Fixer rule to automatically fix the class header regarding PHP DocBlocks.",
+	"description": "This package contains a PHP-CS-Fixer rule to automatically fix the class header regarding PHP DocBlocks.",
 	"license": "GPL-3.0-or-later",
 	"type": "library",
 	"authors": [
