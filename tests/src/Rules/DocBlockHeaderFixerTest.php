@@ -71,7 +71,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithEmptyAnnotations(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, [], 'TestClass');
 
@@ -81,7 +80,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithSingleAnnotation(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, ['author' => 'John Doe <john@example.com>'], '');
 
@@ -92,7 +90,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithMultipleAnnotations(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, [
             'author' => 'John Doe <john@example.com>',
@@ -106,7 +103,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithArrayValue(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, [
             'author' => [
@@ -123,7 +119,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithEmptyValue(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, [
             'deprecated' => '',
@@ -137,7 +132,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithNullValue(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, [
             'internal' => null,
@@ -151,7 +145,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithMixedEmptyAndNonEmptyValues(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, [
             'deprecated' => '',
@@ -189,7 +182,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testParseExistingAnnotations(): void
     {
         $method = new ReflectionMethod($this->fixer, 'parseExistingAnnotations');
-        $method->setAccessible(true);
 
         $docBlock = "/**\n * @author John Doe\n * @license MIT\n */";
         $result = $method->invoke($this->fixer, $docBlock);
@@ -205,7 +197,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testMergeAnnotations(): void
     {
         $method = new ReflectionMethod($this->fixer, 'mergeAnnotations');
-        $method->setAccessible(true);
 
         $existing = ['author' => 'Existing Author', 'version' => '1.0'];
         $new = ['author' => 'New Author', 'license' => 'MIT'];
@@ -228,7 +219,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['annotations' => []]);
         $method->invoke($this->fixer, $file, $tokens);
@@ -243,7 +233,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
@@ -262,7 +251,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
@@ -281,7 +269,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'processStructureDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['separate' => 'none']);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
@@ -297,7 +284,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'processStructureDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['preserve_existing' => true]);
         $method->invoke($this->fixer, $tokens, 2, $annotations, 'Foo');
@@ -313,7 +299,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'processStructureDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['preserve_existing' => false]);
         $method->invoke($this->fixer, $tokens, 2, $annotations, 'Foo');
@@ -328,7 +313,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'findExistingDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 2);
 
@@ -341,7 +325,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'findExistingDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 1);
 
@@ -354,7 +337,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'findExistingDocBlock');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 3);
 
@@ -368,7 +350,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'mergeWithExistingDocBlock');
-        $method->setAccessible(true);
 
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
 
@@ -383,7 +364,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'replaceDocBlock');
-        $method->setAccessible(true);
 
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
 
@@ -398,7 +378,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['separate' => 'none']);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
@@ -414,7 +393,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['separate' => 'top']);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
@@ -431,7 +409,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['separate' => 'bottom']);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
@@ -448,7 +425,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['separate' => 'both']);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
@@ -464,7 +440,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 1);
 
@@ -477,7 +452,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 2);
 
@@ -490,7 +464,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 2);
 
@@ -503,7 +476,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 2);
 
@@ -513,7 +485,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithClassName(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['add_structure_name' => true]);
         $result = $method->invoke($this->fixer, ['author' => 'John Doe'], 'MyClass');
@@ -525,7 +496,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithClassNameOnly(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['add_structure_name' => true]);
         $result = $method->invoke($this->fixer, [], 'MyClass');
@@ -537,7 +507,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithClassNameDisabled(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['add_structure_name' => false]);
         $result = $method->invoke($this->fixer, ['author' => 'John Doe'], 'MyClass');
@@ -549,7 +518,6 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testBuildDocBlockWithEmptyClassName(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['add_structure_name' => true]);
         $result = $method->invoke($this->fixer, ['author' => 'John Doe'], '');
@@ -564,7 +532,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'getStructureName');
-        $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 1);
 
@@ -577,7 +544,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'getStructureName');
-        $method->setAccessible(true);
 
         // Find the class token index
         $classIndex = null;
@@ -600,7 +566,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'getStructureName');
-        $method->setAccessible(true);
 
         // Find the opening brace token (it comes after class name)
         $braceIndex = null;
@@ -625,7 +590,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'getStructureName');
-        $method->setAccessible(true);
 
         // Find the interface token index
         $interfaceIndex = null;
@@ -647,7 +611,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'getStructureName');
-        $method->setAccessible(true);
 
         // Find the trait token index
         $traitIndex = null;
@@ -669,7 +632,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'getStructureName');
-        $method->setAccessible(true);
 
         // Find the enum token index
         $enumIndex = null;
@@ -691,7 +653,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
 
         $method = new ReflectionMethod($this->fixer, 'getStructureName');
-        $method->setAccessible(true);
 
         // Find the closing brace token - when we call getStructureName from there,
         // the loop should complete without finding anything and return empty string (line 153)
@@ -737,7 +698,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
@@ -756,7 +716,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'annotations' => ['author' => 'Jane Doe'],
@@ -775,7 +734,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'annotations' => ['license' => 'MIT'],
@@ -794,7 +752,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
@@ -814,7 +771,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $file = new SplFileInfo(__FILE__);
 
         $method = new ReflectionMethod($this->fixer, 'applyFix');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
@@ -836,7 +792,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'mergeWithExistingDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['add_structure_name' => true]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'TestClass');
@@ -854,7 +809,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'replaceDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure(['add_structure_name' => true]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'TestClass');
@@ -872,7 +826,6 @@ final class DocBlockHeaderFixerTest extends TestCase
         $annotations = ['author' => 'John Doe'];
 
         $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
-        $method->setAccessible(true);
 
         $this->fixer->configure([
             'add_structure_name' => true,
