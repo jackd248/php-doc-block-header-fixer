@@ -91,7 +91,7 @@ final class DocBlockHeaderTest extends TestCase
                 'annotations' => $annotations,
                 'preserve_existing' => false,
                 'separate' => 'top',
-                'add_class_name' => false,
+                'add_structure_name' => false,
             ],
         ];
 
@@ -110,7 +110,7 @@ final class DocBlockHeaderTest extends TestCase
                 'annotations' => $annotations,
                 'preserve_existing' => true,
                 'separate' => 'both',
-                'add_class_name' => false,
+                'add_structure_name' => false,
             ],
         ];
 
@@ -270,7 +270,7 @@ final class DocBlockHeaderTest extends TestCase
         self::assertTrue($reflection->isFinal());
     }
 
-    public function testCreateWithAddClassName(): void
+    public function testCreateWithAddStructureName(): void
     {
         $annotations = ['author' => 'John Doe'];
         $docBlockHeader = DocBlockHeader::create(
@@ -283,10 +283,10 @@ final class DocBlockHeaderTest extends TestCase
         self::assertSame($annotations, $docBlockHeader->annotations);
         self::assertTrue($docBlockHeader->preserveExisting);
         self::assertSame(Separate::None, $docBlockHeader->separate);
-        self::assertTrue($docBlockHeader->addClassName);
+        self::assertTrue($docBlockHeader->addStructureName);
     }
 
-    public function testToArrayWithAddClassName(): void
+    public function testToArrayWithAddStructureName(): void
     {
         $annotations = ['author' => 'John Doe'];
         $docBlockHeader = DocBlockHeader::create(
@@ -303,7 +303,7 @@ final class DocBlockHeaderTest extends TestCase
                 'annotations' => $annotations,
                 'preserve_existing' => false,
                 'separate' => 'top',
-                'add_class_name' => true,
+                'add_structure_name' => true,
             ],
         ];
 

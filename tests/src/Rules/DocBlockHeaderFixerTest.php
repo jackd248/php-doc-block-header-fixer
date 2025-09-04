@@ -46,7 +46,7 @@ final class DocBlockHeaderFixerTest extends TestCase
     {
         $definition = $this->fixer->getDefinition();
 
-        self::assertSame('Add configurable DocBlock annotations before class declarations.', $definition->getSummary());
+        self::assertSame('Add configurable DocBlock annotations before class, interface, trait, and enum declarations.', $definition->getSummary());
     }
 
     public function testGetName(): void
@@ -183,7 +183,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         self::assertContains('annotations', $optionNames);
         self::assertContains('preserve_existing', $optionNames);
         self::assertContains('separate', $optionNames);
-        self::assertContains('add_class_name', $optionNames);
+        self::assertContains('add_structure_name', $optionNames);
     }
 
     public function testParseExistingAnnotations(): void
@@ -280,7 +280,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
         $annotations = ['author' => 'John Doe'];
 
-        $method = new ReflectionMethod($this->fixer, 'processClassDocBlock');
+        $method = new ReflectionMethod($this->fixer, 'processStructureDocBlock');
         $method->setAccessible(true);
 
         $this->fixer->configure(['separate' => 'none']);
@@ -296,7 +296,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
         $annotations = ['author' => 'John Doe'];
 
-        $method = new ReflectionMethod($this->fixer, 'processClassDocBlock');
+        $method = new ReflectionMethod($this->fixer, 'processStructureDocBlock');
         $method->setAccessible(true);
 
         $this->fixer->configure(['preserve_existing' => true]);
@@ -312,7 +312,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $tokens = Tokens::fromCode($code);
         $annotations = ['author' => 'John Doe'];
 
-        $method = new ReflectionMethod($this->fixer, 'processClassDocBlock');
+        $method = new ReflectionMethod($this->fixer, 'processStructureDocBlock');
         $method->setAccessible(true);
 
         $this->fixer->configure(['preserve_existing' => false]);
@@ -515,7 +515,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
         $method->setAccessible(true);
 
-        $this->fixer->configure(['add_class_name' => true]);
+        $this->fixer->configure(['add_structure_name' => true]);
         $result = $method->invoke($this->fixer, ['author' => 'John Doe'], 'MyClass');
 
         $expected = "/**\n * MyClass.\n *\n * @author John Doe\n */";
@@ -527,7 +527,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
         $method->setAccessible(true);
 
-        $this->fixer->configure(['add_class_name' => true]);
+        $this->fixer->configure(['add_structure_name' => true]);
         $result = $method->invoke($this->fixer, [], 'MyClass');
 
         $expected = "/**\n * MyClass.\n */";
@@ -539,7 +539,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
         $method->setAccessible(true);
 
-        $this->fixer->configure(['add_class_name' => false]);
+        $this->fixer->configure(['add_structure_name' => false]);
         $result = $method->invoke($this->fixer, ['author' => 'John Doe'], 'MyClass');
 
         $expected = "/**\n * @author John Doe\n */";
@@ -551,7 +551,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
         $method->setAccessible(true);
 
-        $this->fixer->configure(['add_class_name' => true]);
+        $this->fixer->configure(['add_structure_name' => true]);
         $result = $method->invoke($this->fixer, ['author' => 'John Doe'], '');
 
         $expected = "/**\n * @author John Doe\n */";
@@ -563,7 +563,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $code = '<?php class MyTestClass {}';
         $tokens = Tokens::fromCode($code);
 
-        $method = new ReflectionMethod($this->fixer, 'getClassName');
+        $method = new ReflectionMethod($this->fixer, 'getStructureName');
         $method->setAccessible(true);
 
         $result = $method->invoke($this->fixer, $tokens, 1);
@@ -576,7 +576,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $code = '<?php final class FinalClass {}';
         $tokens = Tokens::fromCode($code);
 
-        $method = new ReflectionMethod($this->fixer, 'getClassName');
+        $method = new ReflectionMethod($this->fixer, 'getStructureName');
         $method->setAccessible(true);
 
         // Find the class token index
@@ -599,7 +599,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $code = '<?php class MyClass { const TEST = 1; }';
         $tokens = Tokens::fromCode($code);
 
-        $method = new ReflectionMethod($this->fixer, 'getClassName');
+        $method = new ReflectionMethod($this->fixer, 'getStructureName');
         $method->setAccessible(true);
 
         // Find the opening brace token (it comes after class name)
@@ -619,15 +619,81 @@ final class DocBlockHeaderFixerTest extends TestCase
         self::assertSame('', $result);
     }
 
-    public function testGetClassNameReturnsEmptyWhenLoopCompletes(): void
+    public function testGetStructureNameInterface(): void
+    {
+        $code = '<?php interface MyInterface {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'getStructureName');
+        $method->setAccessible(true);
+
+        // Find the interface token index
+        $interfaceIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(T_INTERFACE)) {
+                $interfaceIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $interfaceIndex);
+
+        self::assertSame('MyInterface', $result);
+    }
+
+    public function testGetStructureNameTrait(): void
+    {
+        $code = '<?php trait MyTrait {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'getStructureName');
+        $method->setAccessible(true);
+
+        // Find the trait token index
+        $traitIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(T_TRAIT)) {
+                $traitIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $traitIndex);
+
+        self::assertSame('MyTrait', $result);
+    }
+
+    public function testGetStructureNameEnum(): void
+    {
+        $code = '<?php enum MyEnum {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'getStructureName');
+        $method->setAccessible(true);
+
+        // Find the enum token index
+        $enumIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(T_ENUM)) {
+                $enumIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $enumIndex);
+
+        self::assertSame('MyEnum', $result);
+    }
+
+    public function testGetStructureNameReturnsEmptyWhenLoopCompletes(): void
     {
         $code = '<?php class MyClass {}';
         $tokens = Tokens::fromCode($code);
 
-        $method = new ReflectionMethod($this->fixer, 'getClassName');
+        $method = new ReflectionMethod($this->fixer, 'getStructureName');
         $method->setAccessible(true);
 
-        // Find the closing brace token - when we call getClassName from there,
+        // Find the closing brace token - when we call getStructureName from there,
         // the loop should complete without finding anything and return empty string (line 153)
         $braceIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
@@ -639,8 +705,86 @@ final class DocBlockHeaderFixerTest extends TestCase
 
         $result = $method->invoke($this->fixer, $tokens, $braceIndex);
 
-        // Should return empty string because we're at the end and loop completes reaching line 153
+        // Should return empty string because we're at the end and loop completes
         self::assertSame('', $result);
+    }
+
+    public function testIsCandidateInterface(): void
+    {
+        $tokens = Tokens::fromCode('<?php interface Foo {}');
+
+        self::assertTrue($this->fixer->isCandidate($tokens));
+    }
+
+    public function testIsCandidateTrait(): void
+    {
+        $tokens = Tokens::fromCode('<?php trait Foo {}');
+
+        self::assertTrue($this->fixer->isCandidate($tokens));
+    }
+
+    public function testIsCandidateEnum(): void
+    {
+        $tokens = Tokens::fromCode('<?php enum Foo {}');
+
+        self::assertTrue($this->fixer->isCandidate($tokens));
+    }
+
+    public function testApplyFixAddsDocBlockToInterface(): void
+    {
+        $code = '<?php interface Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+        $method->setAccessible(true);
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $expected = "<?php /**\n * @author John Doe\n */interface Foo {}";
+        self::assertSame($expected, $tokens->generateCode());
+    }
+
+    public function testApplyFixAddsDocBlockToTrait(): void
+    {
+        $code = '<?php trait Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+        $method->setAccessible(true);
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'Jane Doe'],
+            'separate' => 'none',
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $expected = "<?php /**\n * @author Jane Doe\n */trait Foo {}";
+        self::assertSame($expected, $tokens->generateCode());
+    }
+
+    public function testApplyFixAddsDocBlockToEnum(): void
+    {
+        $code = '<?php enum Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+        $method->setAccessible(true);
+
+        $this->fixer->configure([
+            'annotations' => ['license' => 'MIT'],
+            'separate' => 'none',
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $expected = "<?php /**\n * @license MIT\n */enum Foo {}";
+        self::assertSame($expected, $tokens->generateCode());
     }
 
     public function testApplyFixWithClassNameEnabled(): void
@@ -654,7 +798,7 @@ final class DocBlockHeaderFixerTest extends TestCase
 
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
-            'add_class_name' => true,
+            'add_structure_name' => true,
             'separate' => 'none',
         ]);
         $method->invoke($this->fixer, $file, $tokens);
@@ -674,7 +818,7 @@ final class DocBlockHeaderFixerTest extends TestCase
 
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
-            'add_class_name' => true,
+            'add_structure_name' => true,
             'separate' => 'none',
         ]);
         $method->invoke($this->fixer, $file, $tokens);
@@ -694,7 +838,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $method = new ReflectionMethod($this->fixer, 'mergeWithExistingDocBlock');
         $method->setAccessible(true);
 
-        $this->fixer->configure(['add_class_name' => true]);
+        $this->fixer->configure(['add_structure_name' => true]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'TestClass');
 
         $result = $tokens->generateCode();
@@ -712,7 +856,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $method = new ReflectionMethod($this->fixer, 'replaceDocBlock');
         $method->setAccessible(true);
 
-        $this->fixer->configure(['add_class_name' => true]);
+        $this->fixer->configure(['add_structure_name' => true]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'TestClass');
 
         $result = $tokens->generateCode();
@@ -731,7 +875,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $method->setAccessible(true);
 
         $this->fixer->configure([
-            'add_class_name' => true,
+            'add_structure_name' => true,
             'separate' => 'none',
         ]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'TestClass');
