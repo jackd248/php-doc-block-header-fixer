@@ -3,6 +3,7 @@
 /.php-cs-fixer.cache
 /.phpunit.result.cache
 /.build
+/coverage-report
 /php-cs-fixer.xml
 /phpstan.xml
 /site

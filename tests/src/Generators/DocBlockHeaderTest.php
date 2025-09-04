@@ -125,7 +125,6 @@ final class DocBlockHeaderTest extends TestCase
             'license' => 'MIT',
             'version' => '1.0.0',
             'since' => '1.0.0',
-            'package' => 'MyPackage',
             'subpackage' => 'SubPackage',
             'see' => 'https://example.com',
             'link' => 'https://example.com',

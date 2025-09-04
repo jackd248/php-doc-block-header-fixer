@@ -79,7 +79,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 ->getOption(),
             (new FixerOptionBuilder('separate', 'Separate the comment'))
                 ->setAllowedValues(Separate::getList())
-                ->setDefault(Separate::Both->value)
+                ->setDefault(Separate::None->value)
                 ->getOption(),
             (new FixerOptionBuilder('add_class_name', 'Add class name before annotations'))
                 ->setAllowedTypes(['bool'])
@@ -202,7 +202,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
      */
     private function insertNewDocBlock(Tokens $tokens, int $classIndex, array $annotations, string $className): void
     {
-        $separate = $this->resolvedConfiguration['separate'] ?? 'both';
+        $separate = $this->resolvedConfiguration['separate'] ?? 'none';
         $insertIndex = $this->findInsertPosition($tokens, $classIndex);
 
         $tokensToInsert = [];
@@ -216,9 +216,14 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         $docBlock = $this->buildDocBlock($annotations, $className);
         $tokensToInsert[] = new Token([T_DOC_COMMENT, $docBlock]);
 
-        // Add separation after comment if needed
+        // For compatibility with no_blank_lines_after_phpdoc, only add bottom separation when 'separate' is not 'none'
+        // This prevents conflicts with PHP-CS-Fixer rules that manage DocBlock spacing
         if (in_array($separate, ['bottom', 'both'], true)) {
-            $tokensToInsert[] = new Token([T_WHITESPACE, "\n"]);
+            // Check if there's already whitespace after the class declaration
+            $nextToken = $tokens[$classIndex] ?? null;
+            if (null !== $nextToken && !$nextToken->isWhitespace()) {
+                $tokensToInsert[] = new Token([T_WHITESPACE, "\n"]);
+            }
         }
 
         $tokens->insertAt($insertIndex, $tokensToInsert);
@@ -296,7 +301,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         if ($addClassName && !empty($className)) {
             $docBlock .= " * {$className}.\n";
 
-            // Add empty line after class name if there are annotations
+            // Add empty line after class name if there are annotations - compatible with phpdoc_separation
             if (!empty($annotations)) {
                 $docBlock .= " *\n";
             }

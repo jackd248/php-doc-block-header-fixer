@@ -97,10 +97,9 @@ final class DocBlockHeaderFixerTest extends TestCase
         $result = $method->invoke($this->fixer, [
             'author' => 'John Doe <john@example.com>',
             'license' => 'MIT',
-            'package' => 'MyPackage',
         ], '');
 
-        $expected = "/**\n * @author John Doe <john@example.com>\n * @license MIT\n * @package MyPackage\n */";
+        $expected = "/**\n * @author John Doe <john@example.com>\n * @license MIT\n */";
         self::assertSame($expected, $result);
     }
 
