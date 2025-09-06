@@ -110,6 +110,14 @@ return (new PhpCsFixer\Config())
 ;
 ```
 
+## ⚙️ Configuration
+
+- `annotations` (array): DocBlock annotations to add to classes
+- `preserve_existing` (boolean, default: true): Keep existing DocBlock annotations
+- `separate` (string, default: 'none'): Add blank lines ('top', 'bottom', 'both', 'none')
+- `add_structure_name` (boolean, default: false): Add class name as first line in DocBlock
+- `ensure_spacing` (boolean, default: true): Ensure proper spacing after DocBlocks to prevent conflicts with PHP-CS-Fixer rules
+
 ## 🧑‍💻 Contributing
 
 Please have a look at [`CONTRIBUTING.md`](CONTRIBUTING.md).

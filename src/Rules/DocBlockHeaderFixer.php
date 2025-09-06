@@ -61,6 +61,13 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         return 'KonradMichalik/docblock_header_comment';
     }
 
+    public function getPriority(): int
+    {
+        // Run before single_line_after_imports (0) and no_extra_blank_lines (0)
+        // Higher priority values run first
+        return 1;
+    }
+
     public function isCandidate(Tokens $tokens): bool
     {
         return $tokens->isTokenKindFound(T_CLASS)
@@ -87,6 +94,10 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             (new FixerOptionBuilder('add_structure_name', 'Add structure name before annotations'))
                 ->setAllowedTypes(['bool'])
                 ->setDefault(false)
+                ->getOption(),
+            (new FixerOptionBuilder('ensure_spacing', 'Ensure proper spacing after DocBlock to prevent conflicts with PHP-CS-Fixer rules'))
+                ->setAllowedTypes(['bool'])
+                ->setDefault(true)
                 ->getOption(),
         ]);
     }
@@ -189,6 +200,12 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
 
         $newDocBlock = $this->buildDocBlock($mergedAnnotations, $structureName);
         $tokens[$docBlockIndex] = new Token([T_DOC_COMMENT, $newDocBlock]);
+
+        // Ensure there's proper spacing after existing DocBlock
+        $ensureSpacing = $this->resolvedConfiguration['ensure_spacing'] ?? true;
+        if ($ensureSpacing) {
+            $this->ensureProperSpacingAfterDocBlock($tokens, $docBlockIndex);
+        }
     }
 
     /**
@@ -198,6 +215,12 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     {
         $newDocBlock = $this->buildDocBlock($annotations, $structureName);
         $tokens[$docBlockIndex] = new Token([T_DOC_COMMENT, $newDocBlock]);
+
+        // Ensure there's proper spacing after replaced DocBlock
+        $ensureSpacing = $this->resolvedConfiguration['ensure_spacing'] ?? true;
+        if ($ensureSpacing) {
+            $this->ensureProperSpacingAfterDocBlock($tokens, $docBlockIndex);
+        }
     }
 
     /**
@@ -219,8 +242,14 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         $docBlock = $this->buildDocBlock($annotations, $structureName);
         $tokensToInsert[] = new Token([T_DOC_COMMENT, $docBlock]);
 
-        // For compatibility with no_blank_lines_after_phpdoc, only add bottom separation when 'separate' is not 'none'
-        // This prevents conflicts with PHP-CS-Fixer rules that manage DocBlock spacing
+        // Add a newline after the DocBlock if ensure_spacing is enabled (default)
+        // This prevents conflicts with single_line_after_imports and no_extra_blank_lines rules
+        $ensureSpacing = $this->resolvedConfiguration['ensure_spacing'] ?? true;
+        if ($ensureSpacing) {
+            $tokensToInsert[] = new Token([T_WHITESPACE, "\n"]);
+        }
+
+        // Add additional separation if configured
         if (in_array($separate, ['bottom', 'both'], true)) {
             // Check if there's already whitespace after the structure declaration
             $nextToken = $tokens[$structureIndex] ?? null;
@@ -326,5 +355,24 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         $docBlock .= ' */';
 
         return $docBlock;
+    }
+
+    /**
+     * Ensures proper spacing after a DocBlock to prevent conflicts with PHP-CS-Fixer rules.
+     */
+    private function ensureProperSpacingAfterDocBlock(Tokens $tokens, int $docBlockIndex): void
+    {
+        $nextIndex = $docBlockIndex + 1;
+
+        // Check if the next token exists and is not already a newline
+        if ($nextIndex < $tokens->count()) {
+            $nextToken = $tokens[$nextIndex];
+
+            // If the next token is not whitespace or doesn't contain a newline, add one
+            if (!$nextToken->isWhitespace() || !str_contains($nextToken->getContent(), "\n")) {
+                // Insert a newline token after the DocBlock
+                $tokens->insertAt($nextIndex, [new Token([T_WHITESPACE, "\n"])]);
+            }
+        }
     }
 }
