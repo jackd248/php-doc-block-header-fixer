@@ -170,13 +170,14 @@ final class DocBlockHeaderFixerTest extends TestCase
         $configDefinition = $this->fixer->getConfigurationDefinition();
         $options = $configDefinition->getOptions();
 
-        self::assertCount(4, $options);
+        self::assertCount(5, $options);
 
         $optionNames = array_map(fn ($option) => $option->getName(), $options);
         self::assertContains('annotations', $optionNames);
         self::assertContains('preserve_existing', $optionNames);
         self::assertContains('separate', $optionNames);
         self::assertContains('add_structure_name', $optionNames);
+        self::assertContains('ensure_spacing', $optionNames);
     }
 
     public function testParseExistingAnnotations(): void
@@ -237,6 +238,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $file, $tokens);
 
@@ -255,6 +257,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $file, $tokens);
 
@@ -270,7 +273,7 @@ final class DocBlockHeaderFixerTest extends TestCase
 
         $method = new ReflectionMethod($this->fixer, 'processStructureDocBlock');
 
-        $this->fixer->configure(['separate' => 'none']);
+        $this->fixer->configure(['separate' => 'none', 'ensure_spacing' => false]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
 
         $expected = "<?php /**\n * @author John Doe\n */class Foo {}";
@@ -379,7 +382,7 @@ final class DocBlockHeaderFixerTest extends TestCase
 
         $method = new ReflectionMethod($this->fixer, 'insertNewDocBlock');
 
-        $this->fixer->configure(['separate' => 'none']);
+        $this->fixer->configure(['separate' => 'none', 'ensure_spacing' => false]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'Foo');
 
         $expected = "<?php /**\n * @author John Doe\n */class Foo {}";
@@ -702,6 +705,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $this->fixer->configure([
             'annotations' => ['author' => 'John Doe'],
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $file, $tokens);
 
@@ -720,6 +724,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $this->fixer->configure([
             'annotations' => ['author' => 'Jane Doe'],
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $file, $tokens);
 
@@ -738,6 +743,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $this->fixer->configure([
             'annotations' => ['license' => 'MIT'],
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $file, $tokens);
 
@@ -757,6 +763,7 @@ final class DocBlockHeaderFixerTest extends TestCase
             'annotations' => ['author' => 'John Doe'],
             'add_structure_name' => true,
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $file, $tokens);
 
@@ -776,6 +783,7 @@ final class DocBlockHeaderFixerTest extends TestCase
             'annotations' => ['author' => 'John Doe'],
             'add_structure_name' => true,
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $file, $tokens);
 
@@ -830,6 +838,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         $this->fixer->configure([
             'add_structure_name' => true,
             'separate' => 'none',
+            'ensure_spacing' => false,
         ]);
         $method->invoke($this->fixer, $tokens, 1, $annotations, 'TestClass');
 
