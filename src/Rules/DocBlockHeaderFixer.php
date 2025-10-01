@@ -150,13 +150,18 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             }
 
             // T_ATTRIBUTE '#[' marks the start of an attribute (we exit it when going backwards)
-            if ($token->isGivenKind([T_ATTRIBUTE, T_FINAL, T_READONLY])) {
+            if ($token->isGivenKind(T_ATTRIBUTE)) {
                 $insideAttribute = false;
                 continue;
             }
 
             // Skip everything inside attributes
             if ($insideAttribute) {
+                continue;
+            }
+
+            // Skip modifiers that can appear between 'new' and 'class'
+            if ($token->isGivenKind([T_FINAL, T_READONLY])) {
                 continue;
             }
 
