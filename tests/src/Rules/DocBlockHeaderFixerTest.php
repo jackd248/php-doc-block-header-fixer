@@ -845,4 +845,109 @@ final class DocBlockHeaderFixerTest extends TestCase
         $expected = "<?php /**\n * TestClass.\n *\n * @author John Doe\n */class TestClass {}";
         self::assertSame($expected, $tokens->generateCode());
     }
+
+    public function testSkipsAnonymousClasses(): void
+    {
+        $code = '<?php $obj = new class {};';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+            'ensure_spacing' => false,
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        // Code should remain unchanged - no DocBlock added to anonymous class
+        self::assertSame($code, $tokens->generateCode());
+    }
+
+    public function testSkipsAnonymousClassesButProcessesRegularClasses(): void
+    {
+        $code = '<?php class RegularClass {} $obj = new class {};';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+            'ensure_spacing' => false,
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $result = $tokens->generateCode();
+
+        // Regular class should have DocBlock
+        self::assertStringContainsString("/**\n * @author John Doe\n */class RegularClass", $result);
+        // Anonymous class should NOT have DocBlock (should remain as "new class")
+        self::assertStringContainsString('new class {}', $result);
+    }
+
+    public function testIsAnonymousClassDetectsAnonymousClass(): void
+    {
+        $code = '<?php $obj = new class {};';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'isAnonymousClass');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        self::assertTrue($result);
+    }
+
+    public function testIsAnonymousClassReturnsFalseForRegularClass(): void
+    {
+        $code = '<?php class RegularClass {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'isAnonymousClass');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        self::assertFalse($result);
+    }
+
+    public function testIsAnonymousClassWithAttribute(): void
+    {
+        $code = '<?php $obj = new #[SomeAttribute] class {};';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'isAnonymousClass');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        self::assertTrue($result);
+    }
 }
