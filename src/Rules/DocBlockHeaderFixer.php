@@ -121,9 +121,37 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 continue;
             }
 
+            // Skip anonymous classes (preceded by 'new' keyword)
+            if ($token->isGivenKind(T_CLASS) && $this->isAnonymousClass($tokens, $index)) {
+                continue;
+            }
+
             $structureName = $this->getStructureName($tokens, $index);
             $this->processStructureDocBlock($tokens, $index, $annotations, $structureName);
         }
+    }
+
+    private function isAnonymousClass(Tokens $tokens, int $classIndex): bool
+    {
+        // Look backwards for 'new' keyword
+        for ($i = $classIndex - 1; $i >= 0; --$i) {
+            $token = $tokens[$i];
+
+            // Skip whitespace and attributes
+            if ($token->isWhitespace() || $token->isGivenKind(T_ATTRIBUTE)) {
+                continue;
+            }
+
+            // If we find 'new', it's an anonymous class
+            if ($token->isGivenKind(T_NEW)) {
+                return true;
+            }
+
+            // If we hit any other meaningful token, it's not anonymous
+            break;
+        }
+
+        return false;
     }
 
     /**
