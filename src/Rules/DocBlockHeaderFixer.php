@@ -134,11 +134,29 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     private function isAnonymousClass(Tokens $tokens, int $classIndex): bool
     {
         // Look backwards for 'new' keyword
+        $insideAttribute = false;
         for ($i = $classIndex - 1; $i >= 0; --$i) {
             $token = $tokens[$i];
 
-            // Skip whitespace and attributes
-            if ($token->isWhitespace() || $token->isGivenKind(T_ATTRIBUTE)) {
+            // Skip whitespace
+            if ($token->isWhitespace()) {
+                continue;
+            }
+
+            // When going backwards, ']' marks the end of an attribute (we enter it)
+            if (']' === $token->getContent()) {
+                $insideAttribute = true;
+                continue;
+            }
+
+            // T_ATTRIBUTE '#[' marks the start of an attribute (we exit it when going backwards)
+            if ($token->isGivenKind([T_ATTRIBUTE, T_FINAL, T_READONLY])) {
+                $insideAttribute = false;
+                continue;
+            }
+
+            // Skip everything inside attributes
+            if ($insideAttribute) {
                 continue;
             }
 
