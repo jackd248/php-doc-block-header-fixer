@@ -33,7 +33,7 @@ final class ComposerServiceTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->testComposerJsonPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $this->testComposerJsonPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
     }
 
     protected function tearDown(): void
@@ -71,7 +71,7 @@ final class ComposerServiceTest extends TestCase
     public function testReadComposerJsonThrowsExceptionWhenFileCannotBeRead(): void
     {
         // Create an empty directory to simulate unreadable file
-        $dirPath = sys_get_temp_dir() . '/test-dir-' . uniqid();
+        $dirPath = sys_get_temp_dir().'/test-dir-'.uniqid();
         mkdir($dirPath);
 
         $this->expectException(RuntimeException::class);
@@ -88,7 +88,7 @@ final class ComposerServiceTest extends TestCase
     public function testReadComposerJsonThrowsExceptionOnReadFailure(): void
     {
         // Create a file with no read permissions to force file_get_contents to return false
-        $invalidPath = sys_get_temp_dir() . '/test-unreadable-' . uniqid() . '.json';
+        $invalidPath = sys_get_temp_dir().'/test-unreadable-'.uniqid().'.json';
         file_put_contents($invalidPath, '{}');
 
         // Make file unreadable (this may not work on all systems, especially Windows)
@@ -171,9 +171,12 @@ final class ComposerServiceTest extends TestCase
 
         self::assertCount(2, $result);
         self::assertSame('John Doe', $result[0]['name']);
+        /* @phpstan-ignore-next-line offsetAccess.notFound */
         self::assertSame('john@example.com', $result[0]['email']);
+        /* @phpstan-ignore-next-line offsetAccess.notFound */
         self::assertSame('Developer', $result[0]['role']);
         self::assertSame('Jane Smith', $result[1]['name']);
+        /* @phpstan-ignore-next-line offsetAccess.notFound */
         self::assertSame('jane@example.com', $result[1]['email']);
     }
 
@@ -241,6 +244,7 @@ final class ComposerServiceTest extends TestCase
 
         self::assertNotNull($result);
         self::assertSame('John Doe', $result['name']);
+        /* @phpstan-ignore-next-line offsetAccess.notFound */
         self::assertSame('john@example.com', $result['email']);
     }
 

@@ -307,7 +307,7 @@ final class DocBlockHeaderTest extends TestCase
 
     public function testFromComposerWithSingleAuthor(): void
     {
-        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $testComposerPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
         $composerData = [
             'name' => 'test/package',
             'authors' => [
@@ -332,7 +332,7 @@ final class DocBlockHeaderTest extends TestCase
 
     public function testFromComposerWithMultipleAuthors(): void
     {
-        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $testComposerPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
         $composerData = [
             'name' => 'test/package',
             'authors' => [
@@ -359,7 +359,7 @@ final class DocBlockHeaderTest extends TestCase
 
     public function testFromComposerWithAuthorWithoutEmail(): void
     {
-        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $testComposerPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
         $composerData = [
             'name' => 'test/package',
             'authors' => [
@@ -382,7 +382,7 @@ final class DocBlockHeaderTest extends TestCase
 
     public function testFromComposerWithNoAuthors(): void
     {
-        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $testComposerPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
         $composerData = [
             'name' => 'test/package',
             'license' => 'MIT',
@@ -402,7 +402,7 @@ final class DocBlockHeaderTest extends TestCase
 
     public function testFromComposerWithNoLicense(): void
     {
-        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $testComposerPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
         $composerData = [
             'name' => 'test/package',
             'authors' => [
@@ -424,7 +424,7 @@ final class DocBlockHeaderTest extends TestCase
 
     public function testFromComposerWithAdditionalAnnotations(): void
     {
-        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $testComposerPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
         $composerData = [
             'name' => 'test/package',
             'authors' => [
@@ -452,7 +452,7 @@ final class DocBlockHeaderTest extends TestCase
 
     public function testFromComposerWithCustomParameters(): void
     {
-        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $testComposerPath = sys_get_temp_dir().'/test-composer-'.uniqid().'.json';
         $composerData = [
             'name' => 'test/package',
             'authors' => [
