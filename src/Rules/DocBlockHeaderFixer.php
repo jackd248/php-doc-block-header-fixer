@@ -3,22 +3,12 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Composer package "php-doc-block-header-fixer".
+ * This file is part of the "php-doc-block-header-fixer" Composer package.
  *
- * Copyright (C) 2025 Konrad Michalik <hej@konradmichalik.dev>
+ * (c) Konrad Michalik <hej@konradmichalik.dev>
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace KonradMichalik\PhpDocBlockHeaderFixer\Rules;
@@ -26,16 +16,17 @@ namespace KonradMichalik\PhpDocBlockHeaderFixer\Rules;
 use KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate;
 use PhpCsFixer\AbstractFixer;
 use PhpCsFixer\Fixer\ConfigurableFixerInterface;
-use PhpCsFixer\FixerConfiguration\FixerConfigurationResolver;
-use PhpCsFixer\FixerConfiguration\FixerConfigurationResolverInterface;
-use PhpCsFixer\FixerConfiguration\FixerOptionBuilder;
-use PhpCsFixer\FixerDefinition\FixerDefinition;
-use PhpCsFixer\FixerDefinition\FixerDefinitionInterface;
-use PhpCsFixer\Tokenizer\Token;
-use PhpCsFixer\Tokenizer\Tokens;
+use PhpCsFixer\FixerConfiguration\{FixerConfigurationResolver, FixerConfigurationResolverInterface, FixerOptionBuilder};
+use PhpCsFixer\FixerDefinition\{FixerDefinition, FixerDefinitionInterface};
+use PhpCsFixer\Tokenizer\{Token, Tokens};
 use SplFileInfo;
 
+use function in_array;
+use function is_array;
+
 /**
+ * DocBlockHeaderFixer.
+ *
  * @author Konrad Michalik <hej@konradmichalik.dev>
  * @license GPL-3.0-or-later
  *
@@ -70,10 +61,10 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
 
     public function isCandidate(Tokens $tokens): bool
     {
-        return $tokens->isTokenKindFound(T_CLASS)
-            || $tokens->isTokenKindFound(T_INTERFACE)
-            || $tokens->isTokenKindFound(T_TRAIT)
-            || $tokens->isTokenKindFound(T_ENUM);
+        return $tokens->isTokenKindFound(\T_CLASS)
+            || $tokens->isTokenKindFound(\T_INTERFACE)
+            || $tokens->isTokenKindFound(\T_TRAIT)
+            || $tokens->isTokenKindFound(\T_ENUM);
     }
 
     public function getConfigurationDefinition(): FixerConfigurationResolverInterface
@@ -117,12 +108,12 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         for ($index = 0, $limit = $tokens->count(); $index < $limit; ++$index) {
             $token = $tokens[$index];
 
-            if (!$token->isGivenKind([T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM])) {
+            if (!$token->isGivenKind([\T_CLASS, \T_INTERFACE, \T_TRAIT, \T_ENUM])) {
                 continue;
             }
 
             // Skip anonymous classes (preceded by 'new' keyword)
-            if ($token->isGivenKind(T_CLASS) && $this->isAnonymousClass($tokens, $index)) {
+            if ($token->isGivenKind(\T_CLASS) && $this->isAnonymousClass($tokens, $index)) {
                 continue;
             }
 
@@ -150,7 +141,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             }
 
             // T_ATTRIBUTE '#[' marks the start of an attribute (we exit it when going backwards)
-            if ($token->isGivenKind(T_ATTRIBUTE)) {
+            if ($token->isGivenKind(\T_ATTRIBUTE)) {
                 $insideAttribute = false;
                 continue;
             }
@@ -161,12 +152,12 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             }
 
             // Skip modifiers that can appear between 'new' and 'class'
-            if ($token->isGivenKind([T_FINAL, T_READONLY])) {
+            if ($token->isGivenKind([\T_FINAL, \T_READONLY])) {
                 continue;
             }
 
             // If we find 'new', it's an anonymous class
-            if ($token->isGivenKind(T_NEW)) {
+            if ($token->isGivenKind(\T_NEW)) {
                 return true;
             }
 
@@ -207,7 +198,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             }
 
             // The first non-whitespace token after the keyword should be the structure name
-            if ($token->isGivenKind(T_STRING)) {
+            if ($token->isGivenKind(\T_STRING)) {
                 return $token->getContent();
             }
 
@@ -227,12 +218,12 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 continue;
             }
 
-            if ($token->isGivenKind(T_DOC_COMMENT)) {
+            if ($token->isGivenKind(\T_DOC_COMMENT)) {
                 return $i;
             }
 
             // If we hit any other meaningful token (except modifiers), stop looking
-            if (!$token->isGivenKind([T_FINAL, T_ABSTRACT, T_ATTRIBUTE])) {
+            if (!$token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_ATTRIBUTE])) {
                 break;
             }
         }
@@ -250,7 +241,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
         $mergedAnnotations = $this->mergeAnnotations($existingAnnotations, $annotations);
 
         $newDocBlock = $this->buildDocBlock($mergedAnnotations, $structureName);
-        $tokens[$docBlockIndex] = new Token([T_DOC_COMMENT, $newDocBlock]);
+        $tokens[$docBlockIndex] = new Token([\T_DOC_COMMENT, $newDocBlock]);
 
         // Ensure there's proper spacing after existing DocBlock
         $ensureSpacing = $this->resolvedConfiguration['ensure_spacing'] ?? true;
@@ -265,7 +256,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     private function replaceDocBlock(Tokens $tokens, int $docBlockIndex, array $annotations, string $structureName): void
     {
         $newDocBlock = $this->buildDocBlock($annotations, $structureName);
-        $tokens[$docBlockIndex] = new Token([T_DOC_COMMENT, $newDocBlock]);
+        $tokens[$docBlockIndex] = new Token([\T_DOC_COMMENT, $newDocBlock]);
 
         // Ensure there's proper spacing after replaced DocBlock
         $ensureSpacing = $this->resolvedConfiguration['ensure_spacing'] ?? true;
@@ -286,18 +277,18 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
 
         // Add separation before comment if needed
         if (in_array($separate, ['top', 'both'], true)) {
-            $tokensToInsert[] = new Token([T_WHITESPACE, "\n"]);
+            $tokensToInsert[] = new Token([\T_WHITESPACE, "\n"]);
         }
 
         // Add the DocBlock
         $docBlock = $this->buildDocBlock($annotations, $structureName);
-        $tokensToInsert[] = new Token([T_DOC_COMMENT, $docBlock]);
+        $tokensToInsert[] = new Token([\T_DOC_COMMENT, $docBlock]);
 
         // Add a newline after the DocBlock if ensure_spacing is enabled (default)
         // This prevents conflicts with single_line_after_imports and no_extra_blank_lines rules
         $ensureSpacing = $this->resolvedConfiguration['ensure_spacing'] ?? true;
         if ($ensureSpacing) {
-            $tokensToInsert[] = new Token([T_WHITESPACE, "\n"]);
+            $tokensToInsert[] = new Token([\T_WHITESPACE, "\n"]);
         }
 
         // Add additional separation if configured
@@ -305,7 +296,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             // Check if there's already whitespace after the structure declaration
             $nextToken = $tokens[$structureIndex] ?? null;
             if (null !== $nextToken && !$nextToken->isWhitespace()) {
-                $tokensToInsert[] = new Token([T_WHITESPACE, "\n"]);
+                $tokensToInsert[] = new Token([\T_WHITESPACE, "\n"]);
             }
         }
 
@@ -324,7 +315,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 continue;
             }
 
-            if ($token->isGivenKind([T_FINAL, T_ABSTRACT, T_ATTRIBUTE])) {
+            if ($token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_ATTRIBUTE])) {
                 $insertIndex = $i;
                 continue;
             }
@@ -422,7 +413,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             // If the next token is not whitespace or doesn't contain a newline, add one
             if (!$nextToken->isWhitespace() || !str_contains($nextToken->getContent(), "\n")) {
                 // Insert a newline token after the DocBlock
-                $tokens->insertAt($nextIndex, [new Token([T_WHITESPACE, "\n"])]);
+                $tokens->insertAt($nextIndex, [new Token([\T_WHITESPACE, "\n"])]);
             }
         }
     }

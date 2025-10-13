@@ -27,9 +27,9 @@
 	},
 	"require-dev": {
 		"armin/editorconfig-cli": "^1.0 || ^2.0",
-		"eliashaeussler/php-cs-fixer-config": "2.3.0",
 		"eliashaeussler/rector-config": "^3.0",
 		"ergebnis/composer-normalize": "^2.44",
+		"konradmichalik/php-cs-fixer-preset": "^0.1.0",
 		"phpstan/phpstan": "^2.0",
 		"phpstan/phpstan-phpunit": "^2.0",
 		"phpstan/phpstan-symfony": "^2.0",
@@ -38,6 +38,11 @@
 	"autoload": {
 		"psr-4": {
 			"KonradMichalik\\PhpDocBlockHeaderFixer\\": "src"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"KonradMichalik\\PhpDocBlockHeaderFixer\\Tests\\": "tests/src"
 		}
 	},
 	"config": {

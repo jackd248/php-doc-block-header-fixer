@@ -3,31 +3,32 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Composer package "php-doc-block-header-fixer".
+ * This file is part of the "php-doc-block-header-fixer" Composer package.
  *
- * Copyright (C) 2025 Konrad Michalik <hej@konradmichalik.dev>
+ * (c) Konrad Michalik <hej@konradmichalik.dev>
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace KonradMichalik\PhpDocBlockHeaderFixer\Generators;
 
 use InvalidArgumentException;
 use KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate;
+use KonradMichalik\PhpDocBlockHeaderFixer\Service\ComposerService;
 
+use function count;
+use function gettype;
+use function in_array;
 use function is_string;
+use function sprintf;
 
+/**
+ * DocBlockHeader.
+ *
+ * @author Konrad Michalik <hej@konradmichalik.dev>
+ * @license GPL-3.0-or-later
+ */
 final class DocBlockHeader implements Generator
 {
     private function __construct(
@@ -37,20 +38,6 @@ final class DocBlockHeader implements Generator
         public readonly Separate $separate,
         public readonly bool $addStructureName,
     ) {}
-
-    /**
-     * @param array<string, string|array<string>> $annotations
-     */
-    public static function create(
-        array $annotations,
-        bool $preserveExisting = true,
-        Separate $separate = Separate::Both,
-        bool $addStructureName = false,
-    ): self {
-        self::validateAnnotations($annotations);
-
-        return new self($annotations, $preserveExisting, $separate, $addStructureName);
-    }
 
     /**
      * @return array<string, array<string, mixed>>
@@ -65,6 +52,66 @@ final class DocBlockHeader implements Generator
                 'add_structure_name' => $this->addStructureName,
             ],
         ];
+    }
+
+    /**
+     * @param array<string, string|array<string>> $annotations
+     */
+    public static function create(
+        array $annotations,
+        bool $preserveExisting = true,
+        Separate $separate = Separate::Both,
+        bool $addStructureName = true,
+    ): self {
+        self::validateAnnotations($annotations);
+
+        return new self($annotations, $preserveExisting, $separate, $addStructureName);
+    }
+
+    /**
+     * @param array<string, string|array<string>> $additionalAnnotations
+     */
+    public static function fromComposer(
+        string $composerJsonPath = 'composer.json',
+        array $additionalAnnotations = [],
+        bool $preserveExisting = true,
+        Separate $separate = Separate::Both,
+        bool $addStructureName = true,
+    ): self {
+        $composerData = ComposerService::readComposerJson($composerJsonPath);
+
+        $annotations = [];
+
+        $authors = ComposerService::extractAuthors($composerData);
+        if (!empty($authors)) {
+            if (count($authors) > 1) {
+                $authorStrings = [];
+                foreach ($authors as $author) {
+                    $authorString = $author['name'];
+                    if (isset($author['email'])) {
+                        $authorString .= sprintf(' <%s>', $author['email']);
+                    }
+                    $authorStrings[] = $authorString;
+                }
+                $annotations['author'] = $authorStrings;
+            } else {
+                $primaryAuthor = $authors[0];
+                $authorString = $primaryAuthor['name'];
+                if (isset($primaryAuthor['email'])) {
+                    $authorString .= sprintf(' <%s>', $primaryAuthor['email']);
+                }
+                $annotations['author'] = $authorString;
+            }
+        }
+
+        $license = ComposerService::extractLicense($composerData);
+        if (null !== $license) {
+            $annotations['license'] = $license;
+        }
+
+        $annotations = [...$annotations, ...$additionalAnnotations];
+
+        return self::create($annotations, $preserveExisting, $separate, $addStructureName);
     }
 
     /**
