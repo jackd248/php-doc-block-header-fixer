@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e63b7e8921fcc49a712d4db0445a772b",
+    "content-hash": "edc0558c6c3d3937bc80aa6e9829e9a3",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -2722,67 +2722,6 @@
                 "source": "https://github.com/a-r-m-i-n/editorconfig-cli"
             },
             "time": "2025-06-02T17:23:31+00:00"
-        },
-        {
-            "name": "eliashaeussler/rector-config",
-            "version": "3.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/eliashaeussler/rector-config.git",
-                "reference": "7b560e5b99f6bbfa806b8e3f338e8314925f70cb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/eliashaeussler/rector-config/zipball/7b560e5b99f6bbfa806b8e3f338e8314925f70cb",
-                "reference": "7b560e5b99f6bbfa806b8e3f338e8314925f70cb",
-                "shasum": ""
-            },
-            "require": {
-                "composer-runtime-api": "^2.0",
-                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
-                "rector/rector": "^1.2.9 || ^2.0"
-            },
-            "require-dev": {
-                "armin/editorconfig-cli": "^1.8 || ^2.0",
-                "composer/composer": "^2.0",
-                "eliashaeussler/php-cs-fixer-config": "^2.0",
-                "eliashaeussler/phpstan-config": "^2.6",
-                "eliashaeussler/phpunit-attributes": "^1.0",
-                "ergebnis/composer-normalize": "^2.30",
-                "illuminate/container": "^10.39 || ^11.0 || ^12.0",
-                "phpstan/extension-installer": "^1.2",
-                "phpunit/phpunit": "^10.5.10 || ^11.0 || ^12.0",
-                "ssch/typo3-rector": "^2.0 || ^3.0",
-                "symfony/config": "^5.4 || ^6.0 || ^7.0",
-                "typo3/cms-core": "^12.4 || ^13.0"
-            },
-            "suggest": {
-                "ssch/typo3-rector": "Configures additional Rector rules for TYPO3 CMS projects (^2.0 || ^3.0)"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "EliasHaeussler\\RectorConfig\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Elias Häußler",
-                    "email": "elias@haeussler.dev",
-                    "homepage": "https://haeussler.dev",
-                    "role": "Maintainer"
-                }
-            ],
-            "description": "My personal configuration for Rector",
-            "support": {
-                "issues": "https://github.com/eliashaeussler/rector-config/issues",
-                "source": "https://github.com/eliashaeussler/rector-config/tree/3.1.1"
-            },
-            "time": "2025-03-19T06:55:11+00:00"
         },
         {
             "name": "ergebnis/composer-normalize",
