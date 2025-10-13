@@ -952,7 +952,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         self::assertTrue($result);
     }
 
-    #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.2')]
+    #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3')]
     public function testIsAnonymousClassWithReadonlyModifier(): void
     {
         $code = '<?php $obj = new readonly class {};';
@@ -975,7 +975,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         self::assertTrue($result);
     }
 
-    #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.2')]
+    #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.3')]
     public function testSkipsAnonymousClassWithReadonlyModifier(): void
     {
         $code = '<?php $obj = new readonly class {};';
