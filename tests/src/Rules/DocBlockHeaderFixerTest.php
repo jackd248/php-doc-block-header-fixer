@@ -3,22 +3,12 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Composer package "php-doc-block-header-fixer".
+ * This file is part of the "php-doc-block-header-fixer" Composer package.
  *
- * Copyright (C) 2025 Konrad Michalik <hej@konradmichalik.dev>
+ * (c) Konrad Michalik <hej@konradmichalik.dev>
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace KonradMichalik\PhpDocBlockHeaderFixer\Tests\Rules;
@@ -33,6 +23,12 @@ use SplFileInfo;
  * @internal
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(DocBlockHeaderFixer::class)]
+/**
+ * DocBlockHeaderFixerTest.
+ *
+ * @author Konrad Michalik <hej@konradmichalik.dev>
+ * @license GPL-3.0-or-later
+ */
 final class DocBlockHeaderFixerTest extends TestCase
 {
     private DocBlockHeaderFixer $fixer;
@@ -52,6 +48,11 @@ final class DocBlockHeaderFixerTest extends TestCase
     public function testGetName(): void
     {
         self::assertSame('KonradMichalik/docblock_header_comment', $this->fixer->getName());
+    }
+
+    public function testGetPriority(): void
+    {
+        self::assertSame(1, $this->fixer->getPriority());
     }
 
     public function testIsCandidate(): void
@@ -551,7 +552,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         // Find the class token index
         $classIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
-            if ($tokens[$i]->isGivenKind(T_CLASS)) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
                 $classIndex = $i;
                 break;
             }
@@ -597,7 +598,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         // Find the interface token index
         $interfaceIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
-            if ($tokens[$i]->isGivenKind(T_INTERFACE)) {
+            if ($tokens[$i]->isGivenKind(\T_INTERFACE)) {
                 $interfaceIndex = $i;
                 break;
             }
@@ -618,7 +619,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         // Find the trait token index
         $traitIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
-            if ($tokens[$i]->isGivenKind(T_TRAIT)) {
+            if ($tokens[$i]->isGivenKind(\T_TRAIT)) {
                 $traitIndex = $i;
                 break;
             }
@@ -639,7 +640,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         // Find the enum token index
         $enumIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
-            if ($tokens[$i]->isGivenKind(T_ENUM)) {
+            if ($tokens[$i]->isGivenKind(\T_ENUM)) {
                 $enumIndex = $i;
                 break;
             }
@@ -898,7 +899,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         // Find the class token index
         $classIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
-            if ($tokens[$i]->isGivenKind(T_CLASS)) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
                 $classIndex = $i;
                 break;
             }
@@ -919,7 +920,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         // Find the class token index
         $classIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
-            if ($tokens[$i]->isGivenKind(T_CLASS)) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
                 $classIndex = $i;
                 break;
             }
@@ -940,7 +941,7 @@ final class DocBlockHeaderFixerTest extends TestCase
         // Find the class token index
         $classIndex = null;
         for ($i = 0; $i < $tokens->count(); ++$i) {
-            if ($tokens[$i]->isGivenKind(T_CLASS)) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
                 $classIndex = $i;
                 break;
             }
@@ -949,5 +950,46 @@ final class DocBlockHeaderFixerTest extends TestCase
         $result = $method->invoke($this->fixer, $tokens, $classIndex);
 
         self::assertTrue($result);
+    }
+
+    public function testIsAnonymousClassWithReadonlyModifier(): void
+    {
+        $code = '<?php $obj = new readonly class {};';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'isAnonymousClass');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        // This tests line 156: continue when token is T_READONLY or T_FINAL
+        self::assertTrue($result);
+    }
+
+    public function testSkipsAnonymousClassWithReadonlyModifier(): void
+    {
+        $code = '<?php $obj = new readonly class {};';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+            'ensure_spacing' => false,
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        // Anonymous class with readonly modifier should NOT have DocBlock added
+        self::assertSame($code, $tokens->generateCode());
     }
 }

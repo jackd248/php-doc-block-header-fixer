@@ -3,30 +3,19 @@
 declare(strict_types=1);
 
 /*
- * This file is part of the Composer package "php-doc-block-header-fixer".
+ * This file is part of the "php-doc-block-header-fixer" Composer package.
  *
- * Copyright (C) 2025 Konrad Michalik <hej@konradmichalik.dev>
+ * (c) Konrad Michalik <hej@konradmichalik.dev>
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
  */
 
 namespace KonradMichalik\PhpDocBlockHeaderFixer\Tests\Generators;
 
 use InvalidArgumentException;
 use KonradMichalik\PhpDocBlockHeaderFixer\Enum\Separate;
-use KonradMichalik\PhpDocBlockHeaderFixer\Generators\DocBlockHeader;
-use KonradMichalik\PhpDocBlockHeaderFixer\Generators\Generator;
+use KonradMichalik\PhpDocBlockHeaderFixer\Generators\{DocBlockHeader, Generator};
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
@@ -34,6 +23,12 @@ use ReflectionClass;
  * @internal
  */
 #[\PHPUnit\Framework\Attributes\CoversClass(DocBlockHeader::class)]
+/**
+ * DocBlockHeaderTest.
+ *
+ * @author Konrad Michalik <hej@konradmichalik.dev>
+ * @license GPL-3.0-or-later
+ */
 final class DocBlockHeaderTest extends TestCase
 {
     public function testImplementsGeneratorInterface(): void
@@ -91,7 +86,7 @@ final class DocBlockHeaderTest extends TestCase
                 'annotations' => $annotations,
                 'preserve_existing' => false,
                 'separate' => 'top',
-                'add_structure_name' => false,
+                'add_structure_name' => true,
             ],
         ];
 
@@ -110,7 +105,7 @@ final class DocBlockHeaderTest extends TestCase
                 'annotations' => $annotations,
                 'preserve_existing' => true,
                 'separate' => 'both',
-                'add_structure_name' => false,
+                'add_structure_name' => true,
             ],
         ];
 
@@ -308,5 +303,181 @@ final class DocBlockHeaderTest extends TestCase
         ];
 
         self::assertSame($expected, $result);
+    }
+
+    public function testFromComposerWithSingleAuthor(): void
+    {
+        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $composerData = [
+            'name' => 'test/package',
+            'authors' => [
+                ['name' => 'John Doe', 'email' => 'john@example.com'],
+            ],
+            'license' => 'MIT',
+        ];
+
+        file_put_contents($testComposerPath, json_encode($composerData));
+
+        try {
+            $docBlockHeader = DocBlockHeader::fromComposer($testComposerPath);
+
+            self::assertSame('John Doe <john@example.com>', $docBlockHeader->annotations['author']);
+            self::assertSame('MIT', $docBlockHeader->annotations['license']);
+            self::assertTrue($docBlockHeader->preserveExisting);
+            self::assertSame(Separate::Both, $docBlockHeader->separate);
+        } finally {
+            unlink($testComposerPath);
+        }
+    }
+
+    public function testFromComposerWithMultipleAuthors(): void
+    {
+        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $composerData = [
+            'name' => 'test/package',
+            'authors' => [
+                ['name' => 'John Doe', 'email' => 'john@example.com'],
+                ['name' => 'Jane Smith', 'email' => 'jane@example.com'],
+            ],
+            'license' => 'GPL-3.0-or-later',
+        ];
+
+        file_put_contents($testComposerPath, json_encode($composerData));
+
+        try {
+            $docBlockHeader = DocBlockHeader::fromComposer($testComposerPath);
+
+            self::assertIsArray($docBlockHeader->annotations['author']);
+            self::assertCount(2, $docBlockHeader->annotations['author']);
+            self::assertSame('John Doe <john@example.com>', $docBlockHeader->annotations['author'][0]);
+            self::assertSame('Jane Smith <jane@example.com>', $docBlockHeader->annotations['author'][1]);
+            self::assertSame('GPL-3.0-or-later', $docBlockHeader->annotations['license']);
+        } finally {
+            unlink($testComposerPath);
+        }
+    }
+
+    public function testFromComposerWithAuthorWithoutEmail(): void
+    {
+        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $composerData = [
+            'name' => 'test/package',
+            'authors' => [
+                ['name' => 'John Doe'],
+            ],
+            'license' => 'MIT',
+        ];
+
+        file_put_contents($testComposerPath, json_encode($composerData));
+
+        try {
+            $docBlockHeader = DocBlockHeader::fromComposer($testComposerPath);
+
+            self::assertSame('John Doe', $docBlockHeader->annotations['author']);
+            self::assertSame('MIT', $docBlockHeader->annotations['license']);
+        } finally {
+            unlink($testComposerPath);
+        }
+    }
+
+    public function testFromComposerWithNoAuthors(): void
+    {
+        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $composerData = [
+            'name' => 'test/package',
+            'license' => 'MIT',
+        ];
+
+        file_put_contents($testComposerPath, json_encode($composerData));
+
+        try {
+            $docBlockHeader = DocBlockHeader::fromComposer($testComposerPath);
+
+            self::assertArrayNotHasKey('author', $docBlockHeader->annotations);
+            self::assertSame('MIT', $docBlockHeader->annotations['license']);
+        } finally {
+            unlink($testComposerPath);
+        }
+    }
+
+    public function testFromComposerWithNoLicense(): void
+    {
+        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $composerData = [
+            'name' => 'test/package',
+            'authors' => [
+                ['name' => 'John Doe', 'email' => 'john@example.com'],
+            ],
+        ];
+
+        file_put_contents($testComposerPath, json_encode($composerData));
+
+        try {
+            $docBlockHeader = DocBlockHeader::fromComposer($testComposerPath);
+
+            self::assertSame('John Doe <john@example.com>', $docBlockHeader->annotations['author']);
+            self::assertArrayNotHasKey('license', $docBlockHeader->annotations);
+        } finally {
+            unlink($testComposerPath);
+        }
+    }
+
+    public function testFromComposerWithAdditionalAnnotations(): void
+    {
+        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $composerData = [
+            'name' => 'test/package',
+            'authors' => [
+                ['name' => 'John Doe', 'email' => 'john@example.com'],
+            ],
+            'license' => 'MIT',
+        ];
+
+        file_put_contents($testComposerPath, json_encode($composerData));
+
+        try {
+            $docBlockHeader = DocBlockHeader::fromComposer(
+                $testComposerPath,
+                ['copyright' => '2025', 'version' => '1.0.0'],
+            );
+
+            self::assertSame('John Doe <john@example.com>', $docBlockHeader->annotations['author']);
+            self::assertSame('MIT', $docBlockHeader->annotations['license']);
+            self::assertSame('2025', $docBlockHeader->annotations['copyright']);
+            self::assertSame('1.0.0', $docBlockHeader->annotations['version']);
+        } finally {
+            unlink($testComposerPath);
+        }
+    }
+
+    public function testFromComposerWithCustomParameters(): void
+    {
+        $testComposerPath = sys_get_temp_dir() . '/test-composer-' . uniqid() . '.json';
+        $composerData = [
+            'name' => 'test/package',
+            'authors' => [
+                ['name' => 'John Doe', 'email' => 'john@example.com'],
+            ],
+            'license' => 'MIT',
+        ];
+
+        file_put_contents($testComposerPath, json_encode($composerData));
+
+        try {
+            $docBlockHeader = DocBlockHeader::fromComposer(
+                $testComposerPath,
+                [],
+                false,
+                Separate::None,
+                false,
+            );
+
+            self::assertSame('John Doe <john@example.com>', $docBlockHeader->annotations['author']);
+            self::assertFalse($docBlockHeader->preserveExisting);
+            self::assertSame(Separate::None, $docBlockHeader->separate);
+            self::assertFalse($docBlockHeader->addStructureName);
+        } finally {
+            unlink($testComposerPath);
+        }
     }
 }

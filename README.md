@@ -110,6 +110,22 @@ return (new PhpCsFixer\Config())
 ;
 ```
 
+Or even simpler, automatically read all authors and license from your `composer.json`:
+
+```php
+<?php
+// ...
+return (new PhpCsFixer\Config())
+    // ...
+    ->registerCustomFixers([
+        new KonradMichalik\PhpDocBlockHeaderFixer\Rules\DocBlockHeaderFixer()
+    ])
+    ->setRules([
+        KonradMichalik\PhpDocBlockHeaderFixer\Generators\DocBlockHeader::fromComposer()->__toArray()
+    ])
+;
+```
+
 ## ⚙️ Configuration
 
 - `annotations` (array): DocBlock annotations to add to classes
