@@ -11,9 +11,6 @@
 
 This packages contains a [PHP-CS-Fixer](https://github.com/PHP-CS-Fixer/PHP-CS-Fixer) rule to automatically fix the header regarding PHP DocBlocks for classes, interfaces, traits and enums.
 
-> [!warning]
-> This package is in early development stage and may change significantly in the future. Use it at your own risk.
-
 **Before:**
 
 ```php
@@ -40,6 +37,7 @@ enum MyEnum {}
  * MyClass.
  *
  * @author Your Name <your@email.org>
+ * @license GPL-3.0-or-later
  */
 class MyClass
 {
