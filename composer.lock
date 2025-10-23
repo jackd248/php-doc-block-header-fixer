@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e63b7e8921fcc49a712d4db0445a772b",
+    "content-hash": "edc0558c6c3d3937bc80aa6e9829e9a3",
     "packages": [
         {
             "name": "clue/ndjson-react",
@@ -402,16 +402,16 @@
         },
         {
             "name": "friendsofphp/php-cs-fixer",
-            "version": "v3.88.2",
+            "version": "v3.89.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer.git",
-                "reference": "a8d15584bafb0f0d9d938827840060fd4a3ebc99"
+                "reference": "4dd6768cb7558440d27d18f54909eee417317ce9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/a8d15584bafb0f0d9d938827840060fd4a3ebc99",
-                "reference": "a8d15584bafb0f0d9d938827840060fd4a3ebc99",
+                "url": "https://api.github.com/repos/PHP-CS-Fixer/PHP-CS-Fixer/zipball/4dd6768cb7558440d27d18f54909eee417317ce9",
+                "reference": "4dd6768cb7558440d27d18f54909eee417317ce9",
                 "shasum": ""
             },
             "require": {
@@ -426,7 +426,6 @@
                 "php": "^7.4 || ^8.0",
                 "react/child-process": "^0.6.6",
                 "react/event-loop": "^1.5",
-                "react/promise": "^3.3",
                 "react/socket": "^1.16",
                 "react/stream": "^1.4",
                 "sebastian/diff": "^4.0.6 || ^5.1.1 || ^6.0.2 || ^7.0",
@@ -494,7 +493,7 @@
             ],
             "support": {
                 "issues": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/issues",
-                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.88.2"
+                "source": "https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/tree/v3.89.0"
             },
             "funding": [
                 {
@@ -502,7 +501,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-09-27T00:24:15+00:00"
+            "time": "2025-10-18T19:30:16+00:00"
         },
         {
             "name": "psr/container",
@@ -2724,67 +2723,6 @@
             "time": "2025-06-02T17:23:31+00:00"
         },
         {
-            "name": "eliashaeussler/rector-config",
-            "version": "3.1.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/eliashaeussler/rector-config.git",
-                "reference": "7b560e5b99f6bbfa806b8e3f338e8314925f70cb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/eliashaeussler/rector-config/zipball/7b560e5b99f6bbfa806b8e3f338e8314925f70cb",
-                "reference": "7b560e5b99f6bbfa806b8e3f338e8314925f70cb",
-                "shasum": ""
-            },
-            "require": {
-                "composer-runtime-api": "^2.0",
-                "php": "~8.1.0 || ~8.2.0 || ~8.3.0 || ~8.4.0",
-                "rector/rector": "^1.2.9 || ^2.0"
-            },
-            "require-dev": {
-                "armin/editorconfig-cli": "^1.8 || ^2.0",
-                "composer/composer": "^2.0",
-                "eliashaeussler/php-cs-fixer-config": "^2.0",
-                "eliashaeussler/phpstan-config": "^2.6",
-                "eliashaeussler/phpunit-attributes": "^1.0",
-                "ergebnis/composer-normalize": "^2.30",
-                "illuminate/container": "^10.39 || ^11.0 || ^12.0",
-                "phpstan/extension-installer": "^1.2",
-                "phpunit/phpunit": "^10.5.10 || ^11.0 || ^12.0",
-                "ssch/typo3-rector": "^2.0 || ^3.0",
-                "symfony/config": "^5.4 || ^6.0 || ^7.0",
-                "typo3/cms-core": "^12.4 || ^13.0"
-            },
-            "suggest": {
-                "ssch/typo3-rector": "Configures additional Rector rules for TYPO3 CMS projects (^2.0 || ^3.0)"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "EliasHaeussler\\RectorConfig\\": "src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GPL-3.0-or-later"
-            ],
-            "authors": [
-                {
-                    "name": "Elias Häußler",
-                    "email": "elias@haeussler.dev",
-                    "homepage": "https://haeussler.dev",
-                    "role": "Maintainer"
-                }
-            ],
-            "description": "My personal configuration for Rector",
-            "support": {
-                "issues": "https://github.com/eliashaeussler/rector-config/issues",
-                "source": "https://github.com/eliashaeussler/rector-config/tree/3.1.1"
-            },
-            "time": "2025-03-19T06:55:11+00:00"
-        },
-        {
             "name": "ergebnis/composer-normalize",
             "version": "2.48.2",
             "source": {
@@ -3620,16 +3558,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.6.1",
+            "version": "v5.6.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2"
+                "reference": "3a454ca033b9e06b63282ce19562e892747449bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2",
-                "reference": "f103601b29efebd7ff4a1ca7b3eeea9e3336a2a2",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/3a454ca033b9e06b63282ce19562e892747449bb",
+                "reference": "3a454ca033b9e06b63282ce19562e892747449bb",
                 "shasum": ""
             },
             "require": {
@@ -3672,9 +3610,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.6.1"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.6.2"
             },
-            "time": "2025-08-13T20:13:15+00:00"
+            "time": "2025-10-21T19:32:17+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -4412,16 +4350,16 @@
         },
         {
             "name": "rector/rector",
-            "version": "2.2.3",
+            "version": "2.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/rectorphp/rector.git",
-                "reference": "d27f976a332a87b5d03553c2e6f04adbe5da034f"
+                "reference": "fb9418af7777dfb1c87a536dc58398b5b07c74b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/rectorphp/rector/zipball/d27f976a332a87b5d03553c2e6f04adbe5da034f",
-                "reference": "d27f976a332a87b5d03553c2e6f04adbe5da034f",
+                "url": "https://api.github.com/repos/rectorphp/rector/zipball/fb9418af7777dfb1c87a536dc58398b5b07c74b9",
+                "reference": "fb9418af7777dfb1c87a536dc58398b5b07c74b9",
                 "shasum": ""
             },
             "require": {
@@ -4460,7 +4398,7 @@
             ],
             "support": {
                 "issues": "https://github.com/rectorphp/rector/issues",
-                "source": "https://github.com/rectorphp/rector/tree/2.2.3"
+                "source": "https://github.com/rectorphp/rector/tree/2.2.5"
             },
             "funding": [
                 {
@@ -4468,7 +4406,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-10-11T21:50:23+00:00"
+            "time": "2025-10-23T11:22:37+00:00"
         },
         {
             "name": "sebastian/cli-parser",
