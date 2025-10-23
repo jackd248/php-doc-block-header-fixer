@@ -138,4 +138,4 @@ Please have a look at [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## ⭐ License
 
-This project is licensed under [GNU General Public License 3.0 (or later)](LICENSE).
+This project is licensed under [GNU General Public License 3.0 (or later)](LICENSE.md).
