@@ -327,7 +327,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, string|array<string>>
      */
     private function parseExistingAnnotations(string $docBlockContent): array
     {
@@ -339,7 +339,19 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             if (preg_match('/^@(\w+)(?:\s+(.*))?$/', $line, $matches)) {
                 $tag = $matches[1];
                 $value = $matches[2] ?? '';
-                $annotations[$tag] = $value;
+
+                // If this tag already exists, convert to array or append to existing array
+                if (isset($annotations[$tag])) {
+                    // Convert existing single value to array
+                    if (!is_array($annotations[$tag])) {
+                        $annotations[$tag] = [$annotations[$tag]];
+                    }
+                    // Append new value to array
+                    $annotations[$tag][] = $value;
+                } else {
+                    // First occurrence, store as string
+                    $annotations[$tag] = $value;
+                }
             }
         }
 
@@ -347,7 +359,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     }
 
     /**
-     * @param array<string, string>               $existing
+     * @param array<string, string|array<string>> $existing
      * @param array<string, string|array<string>> $new
      *
      * @return array<string, string|array<string>>
