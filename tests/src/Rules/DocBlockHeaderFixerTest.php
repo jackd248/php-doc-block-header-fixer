@@ -196,6 +196,54 @@ final class DocBlockHeaderFixerTest extends TestCase
         self::assertSame($expected, $result);
     }
 
+    public function testParseExistingAnnotationsWithDuplicates(): void
+    {
+        $method = new ReflectionMethod($this->fixer, 'parseExistingAnnotations');
+
+        $docBlock = "/**\n * @implements ArrayAccess<int, string>\n * @implements IteratorAggregate<int, string>\n */";
+        $result = $method->invoke($this->fixer, $docBlock);
+
+        self::assertIsArray($result);
+        self::assertArrayHasKey('implements', $result);
+        self::assertIsArray($result['implements']);
+        self::assertCount(2, $result['implements']);
+        self::assertSame('ArrayAccess<int, string>', $result['implements'][0]);
+        self::assertSame('IteratorAggregate<int, string>', $result['implements'][1]);
+    }
+
+    public function testParseExistingAnnotationsWithMultipleDuplicateTags(): void
+    {
+        $method = new ReflectionMethod($this->fixer, 'parseExistingAnnotations');
+
+        $docBlock = "/**\n * @author First Author\n * @license MIT\n * @author Second Author\n * @author Third Author\n */";
+        $result = $method->invoke($this->fixer, $docBlock);
+
+        self::assertIsArray($result);
+        self::assertArrayHasKey('author', $result);
+        self::assertIsArray($result['author']);
+        self::assertCount(3, $result['author']);
+        self::assertSame('First Author', $result['author'][0]);
+        self::assertSame('Second Author', $result['author'][1]);
+        self::assertSame('Third Author', $result['author'][2]);
+        self::assertSame('MIT', $result['license']);
+    }
+
+    public function testParseExistingAnnotationsWithDuplicateEmptyValues(): void
+    {
+        $method = new ReflectionMethod($this->fixer, 'parseExistingAnnotations');
+
+        $docBlock = "/**\n * @internal\n * @api\n * @internal\n */";
+        $result = $method->invoke($this->fixer, $docBlock);
+
+        self::assertIsArray($result);
+        self::assertArrayHasKey('internal', $result);
+        self::assertIsArray($result['internal']);
+        self::assertCount(2, $result['internal']);
+        self::assertSame('', $result['internal'][0]);
+        self::assertSame('', $result['internal'][1]);
+        self::assertSame('', $result['api']);
+    }
+
     public function testMergeAnnotations(): void
     {
         $method = new ReflectionMethod($this->fixer, 'mergeAnnotations');
@@ -993,5 +1041,71 @@ final class DocBlockHeaderFixerTest extends TestCase
 
         // Anonymous class with readonly modifier should NOT have DocBlock added
         self::assertSame($code, $tokens->generateCode());
+    }
+
+    public function testFullRoundTripWithDuplicateImplementsAnnotations(): void
+    {
+        $parseMethod = new ReflectionMethod($this->fixer, 'parseExistingAnnotations');
+        $buildMethod = new ReflectionMethod($this->fixer, 'buildDocBlock');
+
+        // Original DocBlock with duplicate @implements
+        $originalDocBlock = "/**\n * @author Konrad Michalik\n * @license GPL-3.0\n * @implements ArrayAccess<int|null, IconImage>\n * @implements IteratorAggregate<int, IconImage>\n */";
+
+        // Parse existing annotations
+        $parsed = $parseMethod->invoke($this->fixer, $originalDocBlock);
+
+        // Verify parsing preserved both @implements
+        self::assertIsArray($parsed['implements']);
+        self::assertCount(2, $parsed['implements']);
+
+        // Build DocBlock from parsed annotations
+        $rebuilt = $buildMethod->invoke($this->fixer, $parsed, '');
+
+        // Verify both @implements are present in rebuilt DocBlock
+        self::assertStringContainsString('@author Konrad Michalik', $rebuilt);
+        self::assertStringContainsString('@license GPL-3.0', $rebuilt);
+        self::assertStringContainsString('@implements ArrayAccess<int|null, IconImage>', $rebuilt);
+        self::assertStringContainsString('@implements IteratorAggregate<int, IconImage>', $rebuilt);
+    }
+
+    public function testMergeWithExistingDocBlockPreservesDuplicateImplements(): void
+    {
+        $code = "<?php /**\n * @implements ArrayAccess<int, string>\n * @implements IteratorAggregate<int, string>\n */ class TestClass {}";
+        $tokens = Tokens::fromCode($code);
+        $annotations = ['author' => 'John Doe'];
+
+        $method = new ReflectionMethod($this->fixer, 'mergeWithExistingDocBlock');
+
+        $this->fixer->configure(['preserve_existing' => true]);
+        $method->invoke($this->fixer, $tokens, 1, $annotations, 'TestClass');
+
+        $result = $tokens->generateCode();
+
+        // Both @implements should be preserved
+        self::assertStringContainsString('@implements ArrayAccess<int, string>', $result);
+        self::assertStringContainsString('@implements IteratorAggregate<int, string>', $result);
+        self::assertStringContainsString('@author John Doe', $result);
+    }
+
+    public function testApplyFixPreservesDuplicateImplementsInExistingDocBlock(): void
+    {
+        $code = "<?php\n/**\n * @implements ArrayAccess<int, string>\n * @implements IteratorAggregate<int, string>\n */\nclass TestClass {}";
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'preserve_existing' => true,
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $result = $tokens->generateCode();
+
+        // Verify both @implements annotations are preserved after merge
+        self::assertStringContainsString('@implements ArrayAccess<int, string>', $result);
+        self::assertStringContainsString('@implements IteratorAggregate<int, string>', $result);
+        self::assertStringContainsString('@author John Doe', $result);
     }
 }
