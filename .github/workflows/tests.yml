@@ -7,3 +7,6 @@ on:
 jobs:
   tests:
     uses: jackd248/reusable-github-actions/.github/workflows/tests-php.yml@main
+    with:
+      php-versions: '["8.1", "8.2", "8.3", "8.4", "8.5"]'
+      dependencies: '["highest", "lowest"]'
