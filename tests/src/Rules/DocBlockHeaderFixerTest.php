@@ -534,6 +534,73 @@ final class DocBlockHeaderFixerTest extends TestCase
         self::assertSame(1, $result);
     }
 
+    #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.2')]
+    public function testFindInsertPositionWithReadonlyModifier(): void
+    {
+        $code = '<?php readonly class Foo {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        // Should find the readonly modifier at index 1
+        self::assertSame(1, $result);
+    }
+
+    #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.2')]
+    public function testFindInsertPositionWithFinalReadonlyModifiers(): void
+    {
+        $code = '<?php final readonly class Foo {}';
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        // Should find the final modifier at index 1 (the first modifier)
+        self::assertSame(1, $result);
+    }
+
+    #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.2')]
+    public function testApplyFixAddsDocBlockToFinalReadonlyClass(): void
+    {
+        $code = '<?php final readonly class Foo {}';
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+            'ensure_spacing' => false,
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        // DocBlock should be placed BEFORE final, not between readonly and class
+        $expected = "<?php /**\n * @author John Doe\n */final readonly class Foo {}";
+        self::assertSame($expected, $tokens->generateCode());
+    }
+
     public function testBuildDocBlockWithClassName(): void
     {
         $method = new ReflectionMethod($this->fixer, 'buildDocBlock');
