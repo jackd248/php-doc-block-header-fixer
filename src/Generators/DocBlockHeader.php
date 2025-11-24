@@ -29,14 +29,14 @@ use function sprintf;
  * @author Konrad Michalik <hej@konradmichalik.dev>
  * @license GPL-3.0-or-later
  */
-final class DocBlockHeader implements Generator
+final readonly class DocBlockHeader implements Generator
 {
     private function __construct(
         /** @var array<string, string|array<string>> */
-        public readonly array $annotations,
-        public readonly bool $preserveExisting,
-        public readonly Separate $separate,
-        public readonly bool $addStructureName,
+        public array $annotations,
+        public bool $preserveExisting,
+        public Separate $separate,
+        public bool $addStructureName,
     ) {}
 
     /**
