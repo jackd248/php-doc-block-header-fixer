@@ -223,7 +223,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             }
 
             // If we hit any other meaningful token (except modifiers), stop looking
-            if (!$token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_ATTRIBUTE])) {
+            if (!$token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_READONLY, \T_ATTRIBUTE])) {
                 break;
             }
         }
@@ -315,7 +315,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 continue;
             }
 
-            if ($token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_ATTRIBUTE])) {
+            if ($token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_READONLY, \T_ATTRIBUTE])) {
                 $insertIndex = $i;
                 continue;
             }
