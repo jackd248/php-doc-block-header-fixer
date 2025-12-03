@@ -211,10 +211,29 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
 
     private function findExistingDocBlock(Tokens $tokens, int $structureIndex): ?int
     {
+        $insideAttribute = false;
+
         for ($i = $structureIndex - 1; $i >= 0; --$i) {
             $token = $tokens[$i];
 
             if ($token->isWhitespace()) {
+                continue;
+            }
+
+            // When going backwards, ']' marks the end of an attribute (we enter it)
+            if (']' === $token->getContent()) {
+                $insideAttribute = true;
+                continue;
+            }
+
+            // T_ATTRIBUTE '#[' marks the start of an attribute (we exit it when going backwards)
+            if ($token->isGivenKind(\T_ATTRIBUTE)) {
+                $insideAttribute = false;
+                continue;
+            }
+
+            // Skip everything inside attributes
+            if ($insideAttribute) {
                 continue;
             }
 
@@ -223,7 +242,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
             }
 
             // If we hit any other meaningful token (except modifiers), stop looking
-            if (!$token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_READONLY, \T_ATTRIBUTE])) {
+            if (!$token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_READONLY])) {
                 break;
             }
         }
@@ -306,6 +325,7 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
     private function findInsertPosition(Tokens $tokens, int $structureIndex): int
     {
         $insertIndex = $structureIndex;
+        $insideAttribute = false;
 
         // Look backwards for attributes, final, abstract keywords
         for ($i = $structureIndex - 1; $i >= 0; --$i) {
@@ -315,7 +335,25 @@ final class DocBlockHeaderFixer extends AbstractFixer implements ConfigurableFix
                 continue;
             }
 
-            if ($token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_READONLY, \T_ATTRIBUTE])) {
+            // When going backwards, ']' marks the end of an attribute (we enter it)
+            if (']' === $token->getContent()) {
+                $insideAttribute = true;
+                continue;
+            }
+
+            // T_ATTRIBUTE '#[' marks the start of an attribute (we exit it when going backwards)
+            if ($token->isGivenKind(\T_ATTRIBUTE)) {
+                $insideAttribute = false;
+                $insertIndex = $i;
+                continue;
+            }
+
+            // Skip everything inside attributes
+            if ($insideAttribute) {
+                continue;
+            }
+
+            if ($token->isGivenKind([\T_FINAL, \T_ABSTRACT, \T_READONLY])) {
                 $insertIndex = $i;
                 continue;
             }
