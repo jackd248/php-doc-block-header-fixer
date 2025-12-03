@@ -534,6 +534,96 @@ final class DocBlockHeaderFixerTest extends TestCase
         self::assertSame(1, $result);
     }
 
+    public function testFindInsertPositionWithAttributeWithParameters(): void
+    {
+        $code = "<?php #[AsEventListener(identifier: 'my-identifier')] class Foo {}";
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        // Should return index 1 which is the #[ token
+        self::assertSame(1, $result);
+    }
+
+    public function testApplyFixAddsDocBlockBeforeAttribute(): void
+    {
+        $code = "<?php\n#[AsEventListener(identifier: 'my-identifier')]\nclass Foo {}";
+        $tokens = Tokens::fromCode($code);
+        $file = new SplFileInfo(__FILE__);
+
+        $method = new ReflectionMethod($this->fixer, 'applyFix');
+
+        $this->fixer->configure([
+            'annotations' => ['author' => 'John Doe'],
+            'separate' => 'none',
+            'ensure_spacing' => false,
+        ]);
+        $method->invoke($this->fixer, $file, $tokens);
+
+        $result = $tokens->generateCode();
+
+        // DocBlock should be BEFORE the attribute, not between attribute and class
+        self::assertMatchesRegularExpression('/@author John Doe.*#\[AsEventListener/s', $result);
+    }
+
+    public function testFindInsertPositionWithMultipleAttributes(): void
+    {
+        $code = "<?php\n#[Attribute1]\n#[Attribute2(param: 'value')]\nclass Foo {}";
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findInsertPosition');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        // Should return the index of the first attribute (#[Attribute1])
+        // Token structure: [0]=T_OPEN_TAG, [1]=T_WHITESPACE, [2]=T_ATTRIBUTE(#[), ...
+        // The first #[Attribute1] token is at index 2
+        self::assertTrue($tokens[$result]->isGivenKind(\T_ATTRIBUTE));
+    }
+
+    public function testFindExistingDocBlockWithAttributesBetween(): void
+    {
+        $code = "<?php\n/**\n * @author John Doe\n */\n#[SomeAttribute(param: 'value')]\nclass Foo {}";
+        $tokens = Tokens::fromCode($code);
+
+        $method = new ReflectionMethod($this->fixer, 'findExistingDocBlock');
+
+        // Find the class token index
+        $classIndex = null;
+        for ($i = 0; $i < $tokens->count(); ++$i) {
+            if ($tokens[$i]->isGivenKind(\T_CLASS)) {
+                $classIndex = $i;
+                break;
+            }
+        }
+
+        $result = $method->invoke($this->fixer, $tokens, $classIndex);
+
+        // Should find the DocBlock even with attribute in between
+        self::assertNotNull($result);
+        self::assertStringContainsString('@author John Doe', $tokens[$result]->getContent());
+    }
+
     #[\PHPUnit\Framework\Attributes\RequiresPhp('>= 8.2')]
     public function testFindInsertPositionWithReadonlyModifier(): void
     {
